@@ -72,8 +72,11 @@ specifies the stream ID's in the following form:
 
 [+|-]<id>[-<id>]{/[+|-]<id>[-<id>]}
 
-where id is either a stream ID or one of \"all\" or \"none\". A
-- in front of an ID range means exclusion. For example the spec
+where id is either a stream ID or one of
+.B all
+or
+.B none.
+A - in front of an ID range means exclusion. For example the spec
 
 -s 0xc0-0xcf/-0xc2
 
@@ -154,7 +157,7 @@ and so on
 Get an overview of the elementary streams contained in an MPEG
 system stream:
 
-$ mpegdemux -l -f src.mpg
+$ mpegdemux -l -f -s all -p all src.mpg
 
 
 Extract the first video stream:
@@ -169,7 +172,7 @@ $ mpegdemux -d -s 0xc0-0xdf src.mpg dst.mpg
 
 Remove the second video stream:
 
-$ mpegdemux -r -s all-0xc1 -p all src.mpg dst.mpg
+$ mpegdemux -r -s all/-0xc1 -p all src.mpg dst.mpg
 
 
 Extract the first AC3 audio stream from a DVD MPEG2 system stream:

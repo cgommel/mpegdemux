@@ -28,7 +28,7 @@ Examples
 Get an overview of the elementary streams contained in an MPEG
 system stream:
 
-$ mpegdemux -l -f src.mpg
+$ mpegdemux -l -f -s all -p all src.mpg
 
 
 Extract the first video stream:
@@ -43,7 +43,7 @@ $ mpegdemux -d -s 0xc0-0xdf src.mpg dst.mpg
 
 Remove the second video stream:
 
-$ mpegdemux -r -s all-0xc1 -p all src.mpg dst.mpg
+$ mpegdemux -r -s all/-0xc1 -p all src.mpg dst.mpg
 
 
 enjoy,
