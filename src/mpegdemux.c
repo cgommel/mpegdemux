@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.c,v 1.10 2003/03/05 12:21:09 hampa Exp $ */
+/* $Id: mpegdemux.c,v 1.11 2003/03/05 13:30:55 hampa Exp $ */
 
 
 #include "config.h"
@@ -64,15 +64,15 @@ void prt_help (void)
     "usage: mpegdemux [options] [input [output]]\n"
     "  -l, --list               List packets [default]\n"
     "  -r, --remux              Copy modified input to output\n"
-    "  -d, --demux              Demux streams\n"
+    "  -d, --demux              Demultiplex streams\n"
     "  -s, --stream id          Select streams [none]\n"
     "  -p, --substream id       Select substreams [none]\n"
     "  -b, --base-name name     Set the base name for demuxed streams\n"
-    "  -h, --one-system-header  Repeat system headers [no]\n"
-    "  -k, --one-pack           Repeat packs [no]\n"
+    "  -h, --one-system-header  Only one system header [no]\n"
+    "  -k, --one-pack           Only one pack [no]\n"
     "  -e, --one-end            Remove intermediate end codes [no]\n"
     "  -p, --empty-packs        Remux empty packs [no]\n"
-    "  -a, --ac3                Assume DVD AC3 headers\n"
+    "  -a, --ac3                Assume DVD AC3 headers in private streams\n"
     "  -u, --spu                Assume DVD subtitles in private streams\n",
     stdout
   );
