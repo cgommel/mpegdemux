@@ -1,4 +1,8 @@
-0.0.4
+0.0.4	2003-04-09
+
+	* Bugfixes
+	* Better handling of skipped bytes
+	* Incomplete packets can now be dropped
 
 0.0.3	2003-03-08
 
