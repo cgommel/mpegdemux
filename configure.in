@@ -20,7 +20,7 @@
 #* Public License for more details.                                          *
 #*****************************************************************************
 
-# $Id: configure.in,v 1.1 2003/02/02 20:26:13 hampa Exp $
+# $Id: configure.in,v 1.2 2003/02/02 20:34:20 hampa Exp $
 
 AC_INIT(Makefile.in)
 AC_CONFIG_HEADER(src/config.h)
@@ -28,7 +28,7 @@ AC_CONFIG_HEADER(src/config.h)
 
 dnl -----------------------------------------------------------------------
 
-HH_DEFINE_VERSION(mpegdemux, MPEGDEMUX_VERSION, 0, 0, 1)
+HH_DEFINE_VERSION(mpegdemux, MPEGDEMUX_VERSION, 0, 0, 2)
 
 
 dnl -----------------------------------------------------------------------
