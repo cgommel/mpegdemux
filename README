@@ -1,0 +1,50 @@
+mpegdemux
+=========
+
+Mpegdemux is an MPEG1/MPEG2 system stream demultiplexer. It can be
+used to list the contents of an MPEG system stream and to extract
+elementary streams.
+
+Mpegdemux has three primary modes of operation:
+
+- list. In this mode the contents of an MPEG system stream are listed
+  in a textual form. This is useful to get an overview of what's in
+  an MPEG file
+
+- demux. In this mode elementary streams are extracted from an MPEG
+  system stream. The system stream packet structure is dissolved in
+  the process. Typically each extracted stream is written to its
+  own file.
+
+- remux. This is like demux, except that the MPEG system stream
+  structure is left intact. This means that the output is again
+  an MPEG system stream with all but the selected elementary
+  streams removed.
+
+
+Examples
+========
+
+Get an overview of the elementary streams contained in an MPEG
+system stream:
+
+$ mpegdemux -l -f src.mpg
+
+
+Extract the first video stream:
+
+$ mpegdemux -d -s 0xe0 src.mpg dst.m1v
+
+
+Extract all audio streams:
+
+$ mpegdemux -d -s 0xc0-0xdf src.mpg dst.mpg
+
+
+Remove the second video stream:
+
+$ mpegdemux -r -s all-0xc1 -p all src.mpg dst.mpg
+
+
+enjoy,
+Hampa Hug <hampa@hampa.ch
