@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_demux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-04 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-03-05 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_demux.c,v 1.6 2003/03/05 07:43:58 hampa Exp $ */
+/* $Id: mpeg_demux.c,v 1.7 2003/03/05 12:21:39 hampa Exp $ */
 
 
 #include "config.h"
@@ -202,17 +202,23 @@ int mpeg_demux_packet (mpeg_demux_t *mpeg)
   }
 
   if (fp[sid] == NULL) {
-    char *name;
-
-    name = mpeg_demux_get_name (par_demux_name, sid);
-    fp[sid] = fopen (name, "wb");
-    if (fp[sid] == NULL) {
-      prt_err ("can't open stream file (%s)\n", name);
-      par_stream[sid] |= PAR_STREAM_EXCLUDE;
-      free (name);
-      return (0);
+    if (par_demux_name == NULL) {
+      fp[sid] = (FILE *) mpeg->ext;
     }
-    free (name);
+    else {
+      char *name;
+
+      name = mpeg_demux_get_name (par_demux_name, sid);
+      fp[sid] = fopen (name, "wb");
+      if (fp[sid] == NULL) {
+        prt_err ("can't open stream file (%s)\n", name);
+        par_stream[sid] |= PAR_STREAM_EXCLUDE;
+        free (name);
+        return (0);
+      }
+
+      free (name);
+    }
   }
 
   if (cnt > 0) {
@@ -263,12 +269,14 @@ int mpeg_demux (FILE *inp, FILE *out)
   mpeg->mpeg_packet = &mpeg_demux_packet;
   mpeg->mpeg_end = &mpeg_demux_end;
 
+  mpeg->ext = out;
+
   r = mpegd_parse (mpeg);
 
   mpegd_close (mpeg);
 
   for (i = 0; i < 256; i++) {
-    if (fp[i] != NULL) {
+    if ((fp[i] != NULL) && (fp[i] != out)) {
       fclose (fp[i]);
     }
   }
