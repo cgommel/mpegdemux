@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.c,v 1.8 2003/02/05 02:48:08 hampa Exp $ */
+/* $Id: mpeg_parse.c,v 1.9 2003/02/05 03:00:54 hampa Exp $ */
 
 
 #include <stdlib.h>
@@ -152,13 +152,28 @@ unsigned long mpegd_get_bits (mpeg_demux_t *mpeg, unsigned i, unsigned n)
   unsigned long r;
   unsigned long v, m;
   unsigned      b_i, b_n;
+  unsigned char *buf;
 
   if (mpegd_need_bits (mpeg, i + n)) {
     return (0);
   }
 
-  i += 8 * mpeg->buf_i;
+  buf = mpeg->buf + mpeg->buf_i;
+
   r = 0;
+
+  /* aligned bytes */
+  if (((i | n) & 7) == 0) {
+    i = i / 8;
+    n = n / 8;
+    while (n > 0) {
+      r = (r << 8) | buf[i];
+      i += 1;
+      n -= 1;
+    }
+    return (r);
+  }
+
 
   while (n > 0) {
     b_n = 8 - (i & 7);
@@ -169,7 +184,7 @@ unsigned long mpegd_get_bits (mpeg_demux_t *mpeg, unsigned i, unsigned n)
     b_i = 8 - (i & 7) - b_n;
 
     m = (1 << b_n) - 1;
-    v = (mpeg->buf[i >> 3] >> b_i) & m;
+    v = (buf[i >> 3] >> b_i) & m;
 
     r = (r << b_n) | v;
 
@@ -253,7 +268,7 @@ int mpegd_read (mpeg_demux_t *mpeg, void *buf, unsigned n)
 
 int mpegd_set_offset (mpeg_demux_t *mpeg, unsigned long long ofs)
 {
-  if (ogs == mpeg->ofs) {
+  if (ofs == mpeg->ofs) {
     return (0);
   }
 
