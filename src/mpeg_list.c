@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_list.c,v 1.6 2003/02/04 17:10:22 hampa Exp $ */
+/* $Id: mpeg_list.c,v 1.7 2003/02/04 22:16:16 hampa Exp $ */
 
 
 #include <stdio.h>
@@ -38,15 +38,17 @@ int mpeg_list_system_header (mpeg_demux_t *mpeg)
 {
   FILE *fp;
 
-  if (par_first && (mpeg->shdr_cnt > 1)) {
-    return (0);
+  if (mpeg->shdr_cnt > 1) {
+    if (par_first || par_one_shdr) {
+      return (0);
+    }
   }
 
   fp = (FILE *) mpeg->ext;
 
   fprintf (fp, "%08llx: system header[%lu]: size=%u fixed=%d csps=%d\n",
     mpeg->ofs, mpeg->shdr_cnt - 1,
-    mpeg->sh_size, mpeg->sh_fixed, mpeg->sh_csps
+    mpeg->shdr.size, mpeg->shdr.fixed, mpeg->shdr.csps
   );
 
   return (0);
@@ -58,12 +60,8 @@ int mpeg_list_packet (mpeg_demux_t *mpeg)
   FILE     *fp;
   unsigned sid, ssid;
 
-  sid = mpeg->packet_stm_id;
-  ssid = 0;
-
-  if (sid == 0xbd) {
-    ssid = mpegd_get_bits (mpeg, 8 * mpeg->packet_offset, 8);
-  }
+  sid = mpeg->packet.sid;
+  ssid = mpeg->packet.ssid;
 
   if (mpeg_stream_mark (sid, ssid)) {
     return (0);
@@ -73,9 +71,9 @@ int mpeg_list_packet (mpeg_demux_t *mpeg)
 
   fprintf (fp, "%08llx: packet[%lu]: sid=%02x ssid=%02x size=%u type=%u pts=%llu[%.4f]\n",
     mpeg->ofs, mpeg->streams[sid].packet_cnt - 1,
-    sid, ssid, mpeg->packet_size,
-    mpeg->packet_type,
-    mpeg->packet_pts, (double) mpeg->packet_pts / 90000.0
+    sid, ssid, mpeg->packet.size,
+    mpeg->packet.type,
+    mpeg->packet.pts, (double) mpeg->packet.pts / 90000.0
   );
 
   return (0);
@@ -86,18 +84,20 @@ int mpeg_list_pack (mpeg_demux_t *mpeg)
 {
   FILE *fp;
 
-  if (par_first && (mpeg->pack_cnt > 1)) {
-    return (0);
+  if (mpeg->pack_cnt > 1) {
+    if (par_first || par_one_pack) {
+      return (0);
+    }
   }
 
   fp = (FILE *) mpeg->ext;
 
   fprintf (fp, "%08llx: pack[%lu]: type=%u scr=%llu[%.4f] mux=%lu[%.2f] stuff=%u\n",
     mpeg->ofs, mpeg->pack_cnt - 1,
-    mpeg->pack_type,
-    mpeg->pack_scr, (double) mpeg->pack_scr / 90000.0,
-    mpeg->pack_mux_rate, 50.0 * mpeg->pack_mux_rate,
-    mpeg->pack_stuff
+    mpeg->pack.type,
+    mpeg->pack.scr, (double) mpeg->pack.scr / 90000.0,
+    mpeg->pack.mux_rate, 50.0 * mpeg->pack.mux_rate,
+    mpeg->pack.stuff
   );
 
   fflush (fp);

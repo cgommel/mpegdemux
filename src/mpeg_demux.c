@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_demux.c,v 1.3 2003/02/04 17:10:20 hampa Exp $ */
+/* $Id: mpeg_demux.c,v 1.4 2003/02/04 22:16:16 hampa Exp $ */
 
 
 #include <stdio.h>
@@ -117,15 +117,13 @@ int mpeg_demux_packet (mpeg_demux_t *mpeg)
   unsigned cnt;
   int      r;
 
-  sid = mpeg->packet_stm_id;
-  ssid = 0;
+  sid = mpeg->packet.sid;
+  ssid = mpeg->packet.ssid;
 
-  cnt = mpeg->packet_offset;
+  cnt = mpeg->packet.offset;
 
   /* select substream in private stream 1 (AC3 audio) */
   if (sid == 0xbd) {
-    ssid = mpegd_get_bits (mpeg, 8 * mpeg->packet_offset, 8);
-
     if (par_dvdac3) {
       cnt += 4;
     }
@@ -153,7 +151,7 @@ int mpeg_demux_packet (mpeg_demux_t *mpeg)
     mpegd_skip (mpeg, cnt);
   }
 
-  cnt = (mpeg->packet_size + 6) - cnt;
+  cnt = mpeg->packet.size - cnt;
 
   r = mpeg_demux_copy (mpeg, fp[sid], cnt);
 

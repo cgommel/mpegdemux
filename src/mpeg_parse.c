@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.c,v 1.6 2003/02/04 03:25:19 hampa Exp $ */
+/* $Id: mpeg_parse.c,v 1.7 2003/02/04 22:16:16 hampa Exp $ */
 
 
 #include <stdlib.h>
@@ -299,14 +299,14 @@ int mpegd_parse_system_header (mpeg_demux_t *mpeg)
 {
   unsigned long long ofs;
 
-  mpeg->sh_size = mpegd_get_bits (mpeg, 32, 16);
+  mpeg->shdr.size = mpegd_get_bits (mpeg, 32, 16) + 6;
 
-  mpeg->sh_fixed = mpegd_get_bits (mpeg, 78, 1);
-  mpeg->sh_csps = mpegd_get_bits (mpeg, 79, 1);
+  mpeg->shdr.fixed = mpegd_get_bits (mpeg, 78, 1);
+  mpeg->shdr.csps = mpegd_get_bits (mpeg, 79, 1);
 
   mpeg->shdr_cnt += 1;
 
-  ofs = mpeg->ofs + 6 + mpeg->sh_size;
+  ofs = mpeg->ofs + mpeg->shdr.size;
 
   if (mpeg->mpeg_system_header != NULL) {
     if (mpeg->mpeg_system_header (mpeg)) {
@@ -323,14 +323,16 @@ static
 int mpegd_parse_packet (mpeg_demux_t *mpeg)
 {
   unsigned           i;
-  unsigned           sid;
+  unsigned           sid, ssid;
   unsigned long long pts;
   unsigned long long ofs;
 
-  mpeg->packet_type = 0;
+  mpeg->packet.type = 0;
 
   sid = mpegd_get_bits (mpeg, 24, 8);
-  mpeg->packet_size = mpegd_get_bits (mpeg, 32, 16);
+  ssid = 0;
+
+  mpeg->packet.size = mpegd_get_bits (mpeg, 32, 16) + 6;
 
   pts = 0;
 
@@ -346,7 +348,7 @@ int mpegd_parse_packet (mpeg_demux_t *mpeg)
     if (mpegd_get_bits (mpeg, i, 2) == 0x01) {
       unsigned val;
 
-      mpeg->packet_type = 1;
+      mpeg->packet.type = 1;
 
       i += 16;
 
@@ -372,7 +374,7 @@ int mpegd_parse_packet (mpeg_demux_t *mpeg)
       int      pts_dts_flag;
       unsigned cnt;
 
-      mpeg->packet_type = 2;
+      mpeg->packet.type = 2;
 
       pts_dts_flag = mpegd_get_bits (mpeg, i + 8, 2);
       cnt = mpegd_get_bits (mpeg, i + 16, 8);
@@ -389,15 +391,20 @@ int mpegd_parse_packet (mpeg_demux_t *mpeg)
     }
   }
 
-  mpeg->packet_stm_id = sid;
-  mpeg->packet_pts = pts;
-  mpeg->packet_offset = i / 8;
+  if (sid == 0xbd) {
+    ssid = mpegd_get_bits (mpeg, i, 8);
+  }
+
+  mpeg->packet.sid = sid;
+  mpeg->packet.ssid = ssid;
+  mpeg->packet.pts = pts;
+  mpeg->packet.offset = i / 8;
 
   mpeg->packet_cnt += 1;
   mpeg->streams[sid].packet_cnt += 1;
-  mpeg->streams[sid].size += mpeg->packet_size + 6 - mpeg->packet_offset;
+  mpeg->streams[sid].size += mpeg->packet.size - mpeg->packet.offset;
 
-  ofs = mpeg->ofs + 6 + mpeg->packet_size;
+  ofs = mpeg->ofs + mpeg->packet.size;
 
   if (mpeg->mpeg_packet != NULL) {
     if (mpeg->mpeg_packet (mpeg)) {
@@ -417,35 +424,31 @@ int mpegd_parse_pack (mpeg_demux_t *mpeg)
   unsigned long long ofs;
 
   if (mpegd_get_bits (mpeg, 32, 4) == 0x02) {
-    mpeg->pack_type = 1;
-    mpeg->pack_scr = mpegd_get_bits (mpeg, 36, 3);
-    mpeg->pack_scr = (mpeg->pack_scr << 15) | mpegd_get_bits (mpeg, 40, 15);
-    mpeg->pack_scr = (mpeg->pack_scr << 15) | mpegd_get_bits (mpeg, 56, 15);
-
-    mpeg->pack_mux_rate = mpegd_get_bits (mpeg, 73, 22);
-
-    mpeg->pack_stuff = 0;
-
-    ofs = mpeg->ofs + 12;
+    mpeg->pack.type = 1;
+    mpeg->pack.scr = mpegd_get_bits (mpeg, 36, 3);
+    mpeg->pack.scr = (mpeg->pack.scr << 15) | mpegd_get_bits (mpeg, 40, 15);
+    mpeg->pack.scr = (mpeg->pack.scr << 15) | mpegd_get_bits (mpeg, 56, 15);
+    mpeg->pack.mux_rate = mpegd_get_bits (mpeg, 73, 22);
+    mpeg->pack.stuff = 0;
+    mpeg->pack.size = 12;
   }
   else if (mpegd_get_bits (mpeg, 32, 2) == 0x01) {
-    mpeg->pack_type = 2;
-    mpeg->pack_scr = mpegd_get_bits (mpeg, 34, 3);
-    mpeg->pack_scr = (mpeg->pack_scr << 15) | mpegd_get_bits (mpeg, 38, 15);
-    mpeg->pack_scr = (mpeg->pack_scr << 15) | mpegd_get_bits (mpeg, 54, 15);
-
-    mpeg->pack_mux_rate = mpegd_get_bits (mpeg, 80, 22);
-
-    mpeg->pack_stuff = mpegd_get_bits (mpeg, 109, 3);
-
-    ofs = mpeg->ofs + 14 + mpeg->pack_stuff;
+    mpeg->pack.type = 2;
+    mpeg->pack.scr = mpegd_get_bits (mpeg, 34, 3);
+    mpeg->pack.scr = (mpeg->pack.scr << 15) | mpegd_get_bits (mpeg, 38, 15);
+    mpeg->pack.scr = (mpeg->pack.scr << 15) | mpegd_get_bits (mpeg, 54, 15);
+    mpeg->pack.mux_rate = mpegd_get_bits (mpeg, 80, 22);
+    mpeg->pack.stuff = mpegd_get_bits (mpeg, 109, 3);
+    mpeg->pack.size = 14 + mpeg->pack.stuff;
   }
   else {
-    mpeg->pack_type = 0;
-    mpeg->pack_scr = 0;
-    mpeg->pack_mux_rate = 0;
-    ofs = mpeg->ofs + 4;
+    mpeg->pack.type = 0;
+    mpeg->pack.scr = 0;
+    mpeg->pack.mux_rate = 0;
+    mpeg->pack.size = 4;
   }
+
+  ofs = mpeg->ofs + mpeg->pack.size;
 
   mpeg->pack_cnt += 1;
 
@@ -470,7 +473,7 @@ int mpegd_parse_pack (mpeg_demux_t *mpeg)
   while (mpegd_get_bits (mpeg, 0, 24) == MPEG_PACKET_START) {
     sid = mpegd_get_bits (mpeg, 24, 8);
 
-    if (sid == 0xba) {
+    if ((sid == 0xba) || (sid == 0xb9)) {
       break;
     }
     else {

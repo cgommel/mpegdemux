@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_remux.c,v 1.2 2003/02/04 17:10:22 hampa Exp $ */
+/* $Id: mpeg_remux.c,v 1.3 2003/02/04 22:16:17 hampa Exp $ */
 
 
 #include <stdio.h>
@@ -65,15 +65,13 @@ int mpeg_remux_copy (mpeg_demux_t *mpeg, unsigned n)
 static
 int mpeg_remux_system_header (mpeg_demux_t *mpeg)
 {
-  static unsigned long sh_cnt = 0;
-
-  sh_cnt += 1;
-
-  if ((par_rep_sh == 0) && (sh_cnt > 1)) {
-    return (0);
+  if (mpeg->shdr_cnt > 1) {
+    if (par_first || par_one_shdr) {
+      return (0);
+    }
   }
 
-  return (mpeg_remux_copy (mpeg, mpeg->sh_size + 6));
+  return (mpeg_remux_copy (mpeg, mpeg->shdr.size));
 }
 
 static
@@ -81,24 +79,26 @@ int mpeg_remux_packet (mpeg_demux_t *mpeg)
 {
   unsigned sid, ssid;
 
-  sid = mpeg->packet_stm_id;
-  ssid = 0;
-
-  if (sid == 0xbd) {
-    ssid = mpegd_get_bits (mpeg, 8 * mpeg->packet_offset, 8);
-  }
+  sid = mpeg->packet.sid;
+  ssid = mpeg->packet.ssid;
 
   if (mpeg_stream_mark (sid, ssid)) {
     return (0);
   }
 
-  return (mpeg_remux_copy (mpeg, mpeg->packet_size + 6));
+  return (mpeg_remux_copy (mpeg, mpeg->packet.size));
 }
 
 static
 int mpeg_remux_pack (mpeg_demux_t *mpeg)
 {
-  return (mpeg_remux_copy (mpeg, 12));
+  if (mpeg->pack_cnt > 1) {
+    if (par_first || par_one_pack) {
+      return (0);
+    }
+  }
+
+  return (mpeg_remux_copy (mpeg, mpeg->pack.size));
 }
 
 static

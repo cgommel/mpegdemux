@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.c,v 1.5 2003/02/04 17:10:22 hampa Exp $ */
+/* $Id: mpegdemux.c,v 1.6 2003/02/04 22:16:17 hampa Exp $ */
 
 
 #include "config.h"
@@ -47,7 +47,8 @@ static FILE   *par_out = NULL;
 
 unsigned char par_stream[256];
 unsigned char par_substream[256];
-unsigned char par_rep_sh = 0;
+int           par_one_shdr = 0;
+int           par_one_pack = 0;
 unsigned char par_first = 0;
 int           par_dvdac3 = 0;
 
@@ -59,14 +60,15 @@ void prt_help (void)
 {
   fputs (
     "usage: mpegdemux [options]\n"
-    "  -l, --list            List packets [default]\n"
-    "  -r, --remux           Copy modified input to output\n"
-    "  -d, --demux           Demux streams\n"
-    "  -s, --stream id       Select streams [none]\n"
-    "  -p, --substream id    Select substreams [none]\n"
-    "  -b, --base-name name  Set the base name for demuxed streams\n"
-    "  -h, --system-headers  Repeat system headers [no]\n"
-    "  -a, --ac3             Assume DVD AC3 headers\n",
+    "  -l, --list               List packets [default]\n"
+    "  -r, --remux              Copy modified input to output\n"
+    "  -d, --demux              Demux streams\n"
+    "  -s, --stream id          Select streams [none]\n"
+    "  -p, --substream id       Select substreams [none]\n"
+    "  -b, --base-name name     Set the base name for demuxed streams\n"
+    "  -h, --one-system-header  Repeat system headers [no]\n"
+    "  -k, --one-pack           Repeat packs [no]\n"
+    "  -a, --ac3                Assume DVD AC3 headers\n",
     stdout
   );
 }
@@ -322,8 +324,11 @@ int main (int argc, char **argv)
     else if (str_isarg2 (argv[argi], "-a", "--ac3")) {
       par_dvdac3 = 1;
     }
-    else if (str_isarg2 (argv[argi], "-h", "--system-headers")) {
-      par_rep_sh = 1;
+    else if (str_isarg2 (argv[argi], "-h", "--one-system-header")) {
+      par_one_shdr = 1;
+    }
+    else if (str_isarg2 (argv[argi], "-k", "--one-packs")) {
+      par_one_pack = 1;
     }
     else if (str_isarg2 (argv[argi], "-f", "--first")) {
       par_first = 1;

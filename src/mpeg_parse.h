@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.h,v 1.5 2003/02/04 03:25:19 hampa Exp $ */
+/* $Id: mpeg_parse.h,v 1.6 2003/02/04 22:16:17 hampa Exp $ */
 
 
 #ifndef MPEG_PARSE_H
@@ -43,6 +43,29 @@ typedef struct {
   unsigned long long size;
 } mpeg_stream_info_t;
 
+typedef struct {
+  unsigned size;
+  int      fixed;
+  int      csps;
+} mpeg_shdr_t;
+
+typedef struct {
+  unsigned           type;
+  unsigned           sid;
+  unsigned           ssid;
+  unsigned           size;
+  unsigned           offset;
+  unsigned long long pts;
+} mpeg_packet_t;
+
+typedef struct {
+  unsigned           size;
+  unsigned           type;
+  unsigned long long scr;
+  unsigned long      mux_rate;
+  unsigned           stuff;
+} mpeg_pack_t;
+
 typedef struct mpeg_demux_t {
   int                close;
   int                free;
@@ -55,20 +78,9 @@ typedef struct mpeg_demux_t {
   unsigned           buf_n;
   unsigned char      buf[MPEG_DEMUX_BUFFER];
 
-  unsigned           pack_type;
-  unsigned long long pack_scr;
-  unsigned long      pack_mux_rate;
-  unsigned           pack_stuff;
-
-  unsigned           sh_size;
-  int                sh_fixed;
-  int                sh_csps;
-
-  unsigned           packet_type;
-  unsigned           packet_stm_id;
-  unsigned           packet_size;
-  unsigned           packet_offset;
-  unsigned long long packet_pts;
+  mpeg_shdr_t        shdr;
+  mpeg_packet_t      packet;
+  mpeg_pack_t        pack;
 
   unsigned long      shdr_cnt;
   unsigned long      pack_cnt;
