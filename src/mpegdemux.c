@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpegdemux.c                                                *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-05 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-03-06 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.c,v 1.11 2003/03/05 13:30:55 hampa Exp $ */
+/* $Id: mpegdemux.c,v 1.12 2003/03/06 12:53:53 hampa Exp $ */
 
 
 #include "config.h"
@@ -71,7 +71,7 @@ void prt_help (void)
     "  -h, --one-system-header  Only one system header [no]\n"
     "  -k, --one-pack           Only one pack [no]\n"
     "  -e, --one-end            Remove intermediate end codes [no]\n"
-    "  -p, --empty-packs        Remux empty packs [no]\n"
+    "  -P, --empty-packs        Remux empty packs [no]\n"
     "  -a, --ac3                Assume DVD AC3 headers in private streams\n"
     "  -u, --spu                Assume DVD subtitles in private streams\n",
     stdout
@@ -341,7 +341,7 @@ int main (int argc, char **argv)
     else if (str_isarg2 (argv[argi], "-e", "--one-end")) {
       par_one_end = 1;
     }
-    else if (str_isarg2 (argv[argi], "-p", "--empty-packs")) {
+    else if (str_isarg2 (argv[argi], "-P", "--empty-packs")) {
       par_empty_pack = 1;
     }
     else if (str_isarg2 (argv[argi], "-f", "--first")) {
