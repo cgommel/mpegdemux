@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_scan.c                                                *
  * Created:       2003-02-07 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-06-07 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-07-28 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_scan.c,v 1.6 2003/06/07 04:20:14 hampa Exp $ */
+/* $Id: mpeg_scan.c,v 1.7 2003/07/28 06:11:50 hampa Exp $ */
 
 
 #include "config.h"
@@ -47,6 +47,7 @@ int mpeg_scan_packet (mpeg_demux_t *mpeg)
   FILE               *fp;
   unsigned           sid, ssid;
   unsigned long long ofs;
+  char               *type;
 
   sid = mpeg->packet.sid;
   ssid = mpeg->packet.ssid;
@@ -76,9 +77,19 @@ int mpeg_scan_packet (mpeg_demux_t *mpeg)
     }
   }
 
-  fprintf (fp, "%08llx: sid=%02x ssid=%02x type=%u pts=%llu[%.4f]\n",
+  if (mpeg->packet.type == 1) {
+    type = "MPEG1";
+  }
+  else if (mpeg->packet.type == 2) {
+    type = "MPEG2";
+  }
+  else {
+    type = "UNKWN";
+  }
+
+  fprintf (fp, "%08llx: sid=%02x ssid=%02x %s pts=%llu[%.4f]\n",
     ofs, sid, ssid,
-    mpeg->packet.type,
+    type,
     mpeg->packet.pts, (double) mpeg->packet.pts / 90000.0
   );
 
