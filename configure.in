@@ -5,7 +5,7 @@
 #*****************************************************************************
 #* File name:     configure.in                                               *
 #* Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
-#* Last modified: 2003-03-06 by Hampa Hug <hampa@hampa.ch>                   *
+#* Last modified: 2003-04-09 by Hampa Hug <hampa@hampa.ch>                   *
 #* Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
 #*****************************************************************************
 
@@ -20,7 +20,7 @@
 #* Public License for more details.                                          *
 #*****************************************************************************
 
-# $Id: configure.in,v 1.8 2003/03/26 08:23:37 hampa Exp $
+# $Id: configure.in,v 1.9 2003/04/09 00:51:03 hampa Exp $
 
 AC_PREREQ(2.50)
 
@@ -30,7 +30,7 @@ AC_CONFIG_HEADER(src/config.h)
 
 dnl -----------------------------------------------------------------------
 
-HH_DEFINE_VERSION(mpegdemux, MPEGDEMUX_VERSION, 0, 0, 4)
+HH_DEFINE_VERSION(mpegdemux, MPEGDEMUX_VERSION, 0, 0, 5)
 
 MPEGDEMUX_CFG_DATE=`date +%Y-%m-%d`
 MPEGDEMUX_CFG_TIME=`date +%T`
