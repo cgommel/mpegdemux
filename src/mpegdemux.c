@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpegdemux.c                                                *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-02-03 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.c,v 1.2 2003/02/02 20:31:24 hampa Exp $ */
+/* $Id: mpegdemux.c,v 1.3 2003/02/04 02:48:11 hampa Exp $ */
 
 
 #include "config.h"
@@ -59,11 +59,12 @@ void prt_help (void)
     "usage: mpegdemux [options]\n"
     "  -l, --list            List packets [default]\n"
     "  -r, --remux           Copy modified input to output\n"
-    "  -d, --demux name      Demux streams\n"
+    "  -d, --demux           Demux streams\n"
     "  -s, --stream id       Include a stream [all]\n"
     "  -x, --exclude id      Exclude a stream [none]\n"
     "  -i, --invert          Invert exclude mask\n"
-    "  -h, --system-headers  Repeat system headers [no]\n",
+    "  -h, --system-headers  Repeat system headers [no]\n"
+    "  -b, --base-name name  Set the base name for demuxed streams\n",
     stdout
   );
 }
@@ -144,9 +145,14 @@ int main (int argc, char **argv)
       par_demux = 0;
     }
     else if (str_isarg2 (argv[argi], "-d", "--demux")) {
+      par_list = 0;
+      par_remux = 0;
+      par_demux = 1;
+    }
+    else if (str_isarg2 (argv[argi], "-b", "--base-name")) {
       argi += 1;
       if (argi >= argc) {
-        prt_err ("%s: missing output file name\n");
+        prt_err ("%s: missing base name\n");
         return (1);
       }
 
@@ -155,10 +161,6 @@ int main (int argc, char **argv)
       }
 
       par_demux_name = str_clone (argv[argi]);
-
-      par_list = 0;
-      par_remux = 0;
-      par_demux = 1;
     }
     else if (str_isarg2 (argv[argi], "-s", "--stream")) {
       unsigned id;
