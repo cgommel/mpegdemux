@@ -1,4 +1,8 @@
-0.0.3
+0.0.3	2003-03-08
+
+	* New scan mode
+	* System stream syntax bug fix
+	* Some changes to the command line parametrs
 
 0.0.2	2003-03-06
 

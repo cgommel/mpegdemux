@@ -1,7 +1,7 @@
 Begin4
 Title:		mpegdemux
-Version:	0.0.2
-Entered-date:	2003-03-06
+Version:	0.0.3
+Entered-date:	2003-03-08
 Description:	A MPEG1/2 system stream demultiplexer
 Keywords:	MPEG MPEG1 MPEG2 demux demultiplex extract
 Author:		Hampa Hug <hampa@hampa.ch> 
