@@ -20,7 +20,7 @@
 #* Public License for more details.                                          *
 #*****************************************************************************
 
-# $Id: configure.in,v 1.6 2003/03/08 08:19:17 hampa Exp $
+# $Id: configure.in,v 1.7 2003/03/08 08:43:40 hampa Exp $
 
 AC_INIT(Makefile.in)
 AC_CONFIG_HEADER(src/config.h)
@@ -29,6 +29,13 @@ AC_CONFIG_HEADER(src/config.h)
 dnl -----------------------------------------------------------------------
 
 HH_DEFINE_VERSION(mpegdemux, MPEGDEMUX_VERSION, 0, 0, 4)
+
+MPEGDEMUX_CFG_DATE=`date +%Y-%m-%d`
+MPEGDEMUX_CFG_TIME=`date +%T`
+AC_SUBST(MPEGDEMUX_CFG_DATE)
+AC_SUBST(MPEGDEMUX_CFG_TIME)
+AC_DEFINE_UNQUOTED(MPEGDEMUX_CFG_DATE, "$MPEGDEMUX_CFG_DATE")
+AC_DEFINE_UNQUOTED(MPEGDEMUX_CFG_TIME, "$MPEGDEMUX_CFG_TIME")
 
 
 dnl -----------------------------------------------------------------------
