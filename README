@@ -5,7 +5,7 @@ Mpegdemux is an MPEG1/MPEG2 system stream demultiplexer. It can be
 used to list the contents of an MPEG system stream and to extract
 elementary streams.
 
-Mpegdemux has three primary modes of operation:
+Mpegdemux has four primary modes of operation:
 
 - scan. In this mode the MPEG system stream is scanned for elementary
   streams. The first packet of each elementary stream is reported.
