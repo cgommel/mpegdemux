@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.c,v 1.9 2003/03/05 10:35:17 hampa Exp $ */
+/* $Id: mpegdemux.c,v 1.10 2003/03/05 12:21:09 hampa Exp $ */
 
 
 #include "config.h"
@@ -61,7 +61,7 @@ static
 void prt_help (void)
 {
   fputs (
-    "usage: mpegdemux [options]\n"
+    "usage: mpegdemux [options] [input [output]]\n"
     "  -l, --list               List packets [default]\n"
     "  -r, --remux              Copy modified input to output\n"
     "  -d, --demux              Demux streams\n"
