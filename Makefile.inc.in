@@ -1,5 +1,5 @@
 # Makefile include file
-# $Id: Makefile.inc.in,v 1.4 2003/10/21 04:41:11 hampa Exp $
+# $Id$
 
 #--------------------------------------------------------------------------
 # user editable section
@@ -10,6 +10,15 @@ bindir		= @bindir@
 libdir		= @libdir@
 incdir		= @includedir@
 mandir		= @mandir@
+
+
+ifeq "$(V)" "1"
+QP = @\#
+QR =
+else
+QP = @
+QR = @
+endif
 
 
 # Executables
@@ -87,4 +96,5 @@ endif
 
 
 %.o: %.c
-	$(CC) -c $(CC_FLG) -o $@ $<
+	$(QP)echo "  CC     $@"
+	$(QR)$(CC) -c $(CC_FLG) -o $@ $<
