@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_parse.c                                               *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-02-03 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-02-04 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.c,v 1.4 2003/02/03 20:58:34 hampa Exp $ */
+/* $Id: mpeg_parse.c,v 1.5 2003/02/04 02:48:25 hampa Exp $ */
 
 
 #include <stdlib.h>
@@ -120,7 +120,7 @@ int mpegd_buffer_fill (mpeg_demux_t *mpeg)
   n = MPEG_DEMUX_BUFFER - mpeg->buf_n;
 
   if (n > 0) {
-    r = fread (mpeg->buf + mpeg->buf_i, 1, n, mpeg->fp);
+    r = fread (mpeg->buf + mpeg->buf_n, 1, n, mpeg->fp);
     if (r < 0) {
       return (1);
     }
