@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_remux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-02 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-03-05 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_remux.c,v 1.5 2003/03/02 11:19:49 hampa Exp $ */
+/* $Id: mpeg_remux.c,v 1.6 2003/03/05 10:35:17 hampa Exp $ */
 
 
 #include "config.h"
@@ -33,6 +33,13 @@
 #include "mpeg_parse.h"
 #include "mpeg_remux.h"
 #include "mpegdemux.h"
+
+
+#define PACK_BUF_SIZE 16384
+
+
+static unsigned char pack_buf[PACK_BUF_SIZE];
+static unsigned      pack_cnt = 0;
 
 
 static
@@ -65,6 +72,20 @@ int mpeg_remux_copy (mpeg_demux_t *mpeg, unsigned n)
 }
 
 static
+int mpeg_remux_pack_write (mpeg_demux_t *mpeg)
+{
+  FILE *fp;
+
+  if (pack_cnt > 0) {
+    fp = (FILE *) mpeg->ext;
+    fwrite (pack_buf, 1, pack_cnt, fp);
+    pack_cnt = 0;
+  }
+
+  return (0);
+}
+
+static
 int mpeg_remux_system_header (mpeg_demux_t *mpeg)
 {
   if (mpeg->shdr_cnt > 1) {
@@ -88,19 +109,43 @@ int mpeg_remux_packet (mpeg_demux_t *mpeg)
     return (0);
   }
 
+  if (mpeg_remux_pack_write (mpeg)) {
+    return (1);
+  }
+
   return (mpeg_remux_copy (mpeg, mpeg->packet.size));
 }
 
 static
 int mpeg_remux_pack (mpeg_demux_t *mpeg)
 {
+  int r;
+
   if (mpeg->pack_cnt > 1) {
     if (par_first || par_one_pack) {
       return (0);
     }
   }
 
-  return (mpeg_remux_copy (mpeg, mpeg->pack.size));
+  /*
+    If we don't allow empty packs then copy the pack to the buffer,
+    possibly overwriting an old (empty) pack. Otherwise copy the
+    pack immediately to the output.
+  */
+
+  if (!par_empty_pack) {
+    if (mpeg->pack.size > PACK_BUF_SIZE) {
+      return (1);
+    }
+
+    pack_cnt = mpeg->pack.size;
+    r = mpegd_read (mpeg, pack_buf, pack_cnt);
+  }
+  else {
+    r = mpeg_remux_copy (mpeg, mpeg->pack.size);
+  }
+
+  return (r);
 }
 
 static
