@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_demux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-09-10 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-10-21 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_demux.c,v 1.13 2003/09/10 17:05:00 hampa Exp $ */
+/* $Id: mpeg_demux.c,v 1.14 2003/10/21 04:39:51 hampa Exp $ */
 
 
 #include "config.h"
@@ -107,30 +107,31 @@ FILE *mpeg_demux_open (mpeg_demux_t *mpeg, unsigned sid, unsigned ssid)
   unsigned seq;
 
   if (par_demux_name == NULL) {
-    return ((FILE *) mpeg->ext);
+    fp = (FILE *) mpeg->ext;
   }
+  else {
+    seq = (sid == 0xbd) ? ((sid << 8) + ssid) : sid;
 
-  seq = (sid == 0xbd) ? ((sid << 8) + ssid) : sid;
+    name = mpeg_get_name (par_demux_name, seq);
 
-  name = mpeg_get_name (par_demux_name, seq);
+    fp = fopen (name, "wb");
+    if (fp == NULL) {
+      prt_err ("can't open stream file (%s)\n", name);
 
-  fp = fopen (name, "wb");
-  if (fp == NULL) {
-    prt_err ("can't open stream file (%s)\n", name);
+      if (sid == 0xbd) {
+        par_substream[ssid] |= PAR_STREAM_EXCLUDE;
+      }
+      else {
+        par_stream[sid] |= PAR_STREAM_EXCLUDE;
+      }
 
-    if (sid == 0xbd) {
-      par_substream[ssid] |= PAR_STREAM_EXCLUDE;
-    }
-    else {
-      par_stream[sid] |= PAR_STREAM_EXCLUDE;
+      free (name);
+
+      return (NULL);
     }
 
     free (name);
-
-    return (NULL);
   }
-
-  free (name);
 
   if ((sid == 0xbd) && par_dvdsub) {
     fwrite ("SPU ", 1, 4, fp);
