@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.c,v 1.16 2003/04/08 19:01:58 hampa Exp $ */
+/* $Id: mpegdemux.c,v 1.17 2003/04/08 19:19:30 hampa Exp $ */
 
 
 #include "config.h"
@@ -238,8 +238,10 @@ void mpeg_print_stats (mpeg_demux_t *mpeg, FILE *fp)
     "System headers: %lu\n"
     "Packs:          %lu\n"
     "Packets:        %lu\n"
+    "End codes:      %lu\n"
     "Skipped:        %lu bytes\n",
-    mpeg->shdr_cnt, mpeg->pack_cnt, mpeg->packet_cnt, mpeg->skip_cnt
+    mpeg->shdr_cnt, mpeg->pack_cnt, mpeg->packet_cnt, mpeg->end_cnt,
+    mpeg->skip_cnt
   );
 
   for (i = 0; i < 256; i++) {

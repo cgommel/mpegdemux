@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_scan.c                                                *
  * Created:       2003-02-07 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-08 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-04-08 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_scan.c,v 1.3 2003/03/08 21:12:26 hampa Exp $ */
+/* $Id: mpeg_scan.c,v 1.4 2003/04/08 19:19:30 hampa Exp $ */
 
 
 #include "config.h"
@@ -44,14 +44,25 @@ int mpeg_scan_system_header (mpeg_demux_t *mpeg)
 static
 int mpeg_scan_packet (mpeg_demux_t *mpeg)
 {
-  FILE     *fp;
-  unsigned sid, ssid;
+  FILE               *fp;
+  unsigned           sid, ssid;
+  unsigned long long ofs;
 
   sid = mpeg->packet.sid;
   ssid = mpeg->packet.ssid;
 
   if (mpeg_stream_excl (sid, ssid)) {
     return (0);
+  }
+
+  fp = (FILE *) mpeg->ext;
+
+  ofs = mpeg->ofs;
+
+  if (mpegd_set_offset (mpeg, ofs + mpeg->packet.size)) {
+    fprintf (fp, "%08llx: sid=%02x ssid=%02x incomplete packet\n",
+      ofs, sid, ssid
+    );
   }
 
   if (sid == 0xbd) {
@@ -65,10 +76,8 @@ int mpeg_scan_packet (mpeg_demux_t *mpeg)
     }
   }
 
-  fp = (FILE *) mpeg->ext;
-
   fprintf (fp, "%08llx: sid=%02x ssid=%02x type=%u pts=%llu[%.4f]\n",
-    mpeg->ofs, sid, ssid,
+    ofs, sid, ssid,
     mpeg->packet.type,
     mpeg->packet.pts, (double) mpeg->packet.pts / 90000.0
   );
