@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_parse.c                                               *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-02-03 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.c,v 1.3 2003/02/03 16:16:31 hampa Exp $ */
+/* $Id: mpeg_parse.c,v 1.4 2003/02/03 20:58:34 hampa Exp $ */
 
 
 #include <stdlib.h>
@@ -323,10 +323,11 @@ static
 int mpegd_parse_packet (mpeg_demux_t *mpeg)
 {
   unsigned           i;
-  unsigned           val;
   unsigned           sid;
   unsigned long long pts;
   unsigned long long ofs;
+
+  mpeg->packet_type = 0;
 
   sid = mpegd_get_bits (mpeg, 24, 8);
   mpeg->packet_size = mpegd_get_bits (mpeg, 32, 16);
@@ -334,34 +335,57 @@ int mpegd_parse_packet (mpeg_demux_t *mpeg)
   pts = 0;
 
   i = 48;
-  if (mpeg->packet_stm_id != 0xbf) {
+  if (((sid >= 0xc0) && (sid < 0xf0)) || (sid == 0xbd)) {
     while (mpegd_get_bits (mpeg, i, 8) == 0xff) {
       if (i > (48 + 16 * 8)) {
-        return (mpegd_skip (mpeg, i / 8));
+        break;
       }
       i += 8;
     }
 
     if (mpegd_get_bits (mpeg, i, 2) == 0x01) {
+      unsigned val;
+
+      mpeg->packet_type = 1;
+
       i += 16;
-    }
 
-    val = mpegd_get_bits (mpeg, i, 8);
+      val = mpegd_get_bits (mpeg, i, 8);
 
-    if ((val & 0xf0) == 0x20) {
-      pts = mpegd_get_bits (mpeg, i + 4, 3);
-      pts = (pts << 15) | mpegd_get_bits (mpeg, i + 8, 15);
-      pts = (pts << 15) | mpegd_get_bits (mpeg, i + 24, 15);
-      i += 40;
+      if ((val & 0xf0) == 0x20) {
+        pts = mpegd_get_bits (mpeg, i + 4, 3);
+        pts = (pts << 15) | mpegd_get_bits (mpeg, i + 8, 15);
+        pts = (pts << 15) | mpegd_get_bits (mpeg, i + 24, 15);
+        i += 40;
+      }
+      else if ((val & 0xf0) == 0x30) {
+        pts = mpegd_get_bits (mpeg, i + 4, 3);
+        pts = (pts << 15) | mpegd_get_bits (mpeg, i + 8, 15);
+        pts = (pts << 15) | mpegd_get_bits (mpeg, i + 24, 15);
+        i += 80;
+      }
+      else if (val == 0x0f) {
+        i += 8;
+      }
     }
-    else if ((val & 0xf0) == 0x30) {
-      pts = mpegd_get_bits (mpeg, i + 4, 3);
-      pts = (pts << 15) | mpegd_get_bits (mpeg, i + 8, 15);
-      pts = (pts << 15) | mpegd_get_bits (mpeg, i + 24, 15);
-      i += 80;
-    }
-    else if (val == 0x0f) {
-      i += 8;
+    else if (mpegd_get_bits (mpeg, i, 2) == 0x02) {
+      int      pts_dts_flag;
+      unsigned cnt;
+
+      mpeg->packet_type = 2;
+
+      pts_dts_flag = mpegd_get_bits (mpeg, i + 8, 2);
+      cnt = mpegd_get_bits (mpeg, i + 16, 8);
+
+      if (pts_dts_flag & 2) {
+        if (mpegd_get_bits (mpeg, i + 24, 4) == 0x02) {
+          pts = mpegd_get_bits (mpeg, i + 28, 3);
+          pts = (pts << 15) | mpegd_get_bits (mpeg, i + 32, 15);
+          pts = (pts << 15) | mpegd_get_bits (mpeg, i + 48, 15);
+        }
+      }
+
+      i += 8 * (cnt + 3);
     }
   }
 
@@ -389,22 +413,41 @@ int mpegd_parse_packet (mpeg_demux_t *mpeg)
 static
 int mpegd_parse_pack (mpeg_demux_t *mpeg)
 {
-  unsigned stmid;
+  unsigned           sid;
   unsigned long long ofs;
 
-  if (mpegd_get_bits (mpeg, 32, 4) != 0x02) {
-    return (0);
+  if (mpegd_get_bits (mpeg, 32, 4) == 0x02) {
+    mpeg->pack_type = 1;
+    mpeg->pack_scr = mpegd_get_bits (mpeg, 36, 3);
+    mpeg->pack_scr = (mpeg->pack_scr << 15) | mpegd_get_bits (mpeg, 40, 15);
+    mpeg->pack_scr = (mpeg->pack_scr << 15) | mpegd_get_bits (mpeg, 56, 15);
+
+    mpeg->pack_mux_rate = mpegd_get_bits (mpeg, 73, 22);
+
+    ofs = mpeg->ofs + 12;
+  }
+  else if (mpegd_get_bits (mpeg, 32, 2) == 0x01) {
+    unsigned stuff;
+
+    mpeg->pack_type = 2;
+    mpeg->pack_scr = mpegd_get_bits (mpeg, 34, 3);
+    mpeg->pack_scr = (mpeg->pack_scr << 15) | mpegd_get_bits (mpeg, 38, 15);
+    mpeg->pack_scr = (mpeg->pack_scr << 15) | mpegd_get_bits (mpeg, 54, 15);
+
+    mpeg->pack_mux_rate = mpegd_get_bits (mpeg, 80, 22);
+
+    stuff = mpegd_get_bits (mpeg, 109, 3);
+
+    ofs = mpeg->ofs + 14 + stuff;
+  }
+  else {
+    mpeg->pack_type = 0;
+    mpeg->pack_scr = 0;
+    mpeg->pack_mux_rate = 0;
+    ofs = mpeg->ofs + 4;
   }
 
-  mpeg->pack_scr = mpegd_get_bits (mpeg, 36, 3);
-  mpeg->pack_scr = (mpeg->pack_scr << 15) | mpegd_get_bits (mpeg, 40, 15);
-  mpeg->pack_scr = (mpeg->pack_scr << 15) | mpegd_get_bits (mpeg, 56, 15);
-
-  mpeg->pack_mux_rate = mpegd_get_bits (mpeg, 73, 22);
-
   mpeg->pack_cnt += 1;
-
-  ofs = mpeg->ofs + 12;
 
   if (mpeg->mpeg_pack != NULL) {
     if (mpeg->mpeg_pack (mpeg)) {
@@ -414,34 +457,27 @@ int mpegd_parse_pack (mpeg_demux_t *mpeg)
 
   mpegd_set_offset (mpeg, ofs);
 
+  mpegd_seek_header (mpeg, 1);
+
   if (mpegd_get_bits (mpeg, 0, 32) == MPEG_SYSTEM_HEADER) {
     if (mpegd_parse_system_header (mpeg)) {
       return (1);
     }
   }
 
-  while (mpegd_get_bits (mpeg, 0, 24) == MPEG_PACKET_START) {
-    stmid = mpegd_get_bits (mpeg, 24, 8);
+  mpegd_seek_header (mpeg, 1);
 
-    if ((stmid & 0xfc) == 0xbc) {
-      /* private / padding stream */
-      mpegd_parse_packet (mpeg);
-    }
-    else if ((stmid & 0xe0) == 0xc0) {
-      /* audio stream */
-      mpegd_parse_packet (mpeg);
-    }
-    else if ((stmid & 0xf0) == 0xe0) {
-      /* video stream */
-      mpegd_parse_packet (mpeg);
-    }
-    else if ((stmid & 0xf0) == 0xf0) {
-      /* reserved stream */
-      mpegd_parse_packet (mpeg);
-    }
-    else {
+  while (mpegd_get_bits (mpeg, 0, 24) == MPEG_PACKET_START) {
+    sid = mpegd_get_bits (mpeg, 24, 8);
+
+    if (sid == 0xba) {
       break;
     }
+    else {
+      mpegd_parse_packet (mpeg);
+    }
+
+    mpegd_seek_header (mpeg, 1);
   }
 
   return (0);

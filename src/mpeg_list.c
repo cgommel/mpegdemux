@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_list.c,v 1.3 2003/02/03 16:16:31 hampa Exp $ */
+/* $Id: mpeg_list.c,v 1.4 2003/02/03 20:58:33 hampa Exp $ */
 
 
 #include <stdio.h>
@@ -70,9 +70,10 @@ int mpeg_list_packet (mpeg_demux_t *mpeg)
 
   fp = (FILE *) mpeg->ext;
 
-  fprintf (fp, "%08llx: packet[%lu]: stream id=%02x size=%u pts=%llu[%.4f]\n",
+  fprintf (fp, "%08llx: packet[%lu]: stream id=%02x size=%u type=%u pts=%llu[%.4f]\n",
     mpeg->ofs, mpeg->streams[id].packet_cnt - 1,
     mpeg->packet_stm_id, mpeg->packet_size,
+    mpeg->packet_type,
     mpeg->packet_pts, (double) mpeg->packet_pts / 90000.0
   );
 
@@ -140,8 +141,10 @@ int mpeg_list (FILE *inp, FILE *out)
     "System headers: %lu\n"
     "Packs:          %lu\n"
     "Packets:        %lu\n"
-    "Skipped:        %lu bytes\n",
-    mpeg->shdr_cnt, mpeg->pack_cnt, mpeg->packet_cnt, mpeg->skip_cnt
+    "Skipped:        %lu bytes\n"
+    "Next:           %08lx\n",
+    mpeg->shdr_cnt, mpeg->pack_cnt, mpeg->packet_cnt, mpeg->skip_cnt,
+    mpegd_get_bits (mpeg, 0, 32)
   );
 
   for (i = 0; i < 256; i++) {
