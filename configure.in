@@ -20,7 +20,9 @@
 #* Public License for more details.                                          *
 #*****************************************************************************
 
-# $Id: configure.in,v 1.7 2003/03/08 08:43:40 hampa Exp $
+# $Id: configure.in,v 1.8 2003/03/26 08:23:37 hampa Exp $
+
+AC_PREREQ(2.50)
 
 AC_INIT(Makefile.in)
 AC_CONFIG_HEADER(src/config.h)
