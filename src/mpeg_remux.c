@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_remux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-02-08 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-03-02 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,8 +20,10 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_remux.c,v 1.4 2003/02/08 07:11:56 hampa Exp $ */
+/* $Id: mpeg_remux.c,v 1.5 2003/03/02 11:19:49 hampa Exp $ */
 
+
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

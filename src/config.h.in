@@ -4,9 +4,9 @@
 
 /*****************************************************************************
  * File name:     config.h.in                                                *
- * Created:       2003-02-02 by Hampa Hug <hhug@student.ethz.ch>             *
- * Last modified: 2003-02-02 by Hampa Hug <hhug@student.ethz.ch>             *
- * Copyright:     (C) 2003 by Hampa Hug <hhug@student.ethz.ch>               *
+ * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-03-02 by Hampa Hug <hampa@hampa.ch>                   *
+ * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: config.h.in,v 1.1 2003/02/02 20:26:13 hampa Exp $ */
+/* $Id: config.h.in,v 1.2 2003/03/02 11:19:49 hampa Exp $ */
 
 
 #ifndef MPEGDEMUX_CONFIG_H
@@ -31,10 +31,16 @@
 
 #undef HAVE_STDINT_H
 
+#undef MPEGDEMUX_LARGE_FILE
+
 #undef MPEGDEMUX_VERSION_MAJ
 #undef MPEGDEMUX_VERSION_MIN
 #undef MPEGDEMUX_VERSION_MIC
 #undef MPEGDEMUX_VERSION_STR
+
+#ifdef MPEGDEMUX_LARGE_FILE
+#define _FILE_OFFSET_BITS 64
+#endif
 
 
 #endif

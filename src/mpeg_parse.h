@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_parse.h                                               *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-02-08 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-03-02 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,12 +20,14 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.h,v 1.8 2003/02/08 07:11:56 hampa Exp $ */
+/* $Id: mpeg_parse.h,v 1.9 2003/03/02 11:19:49 hampa Exp $ */
 
 
 #ifndef MPEG_PARSE_H
 #define MPEG_PARSE_H 1
 
+
+#include "config.h"
 
 #include <stdio.h>
 
