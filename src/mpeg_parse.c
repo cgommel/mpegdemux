@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.c,v 1.15 2003/04/08 22:03:26 hampa Exp $ */
+/* $Id: mpeg_parse.c,v 1.16 2003/04/08 23:21:11 hampa Exp $ */
 
 
 #include "config.h"
@@ -281,14 +281,18 @@ int mpegd_set_offset (mpeg_demux_t *mpeg, unsigned long long ofs)
 static
 int mpegd_seek_header (mpeg_demux_t *mpeg)
 {
+  unsigned long long ofs;
+
   while (mpegd_get_bits (mpeg, 0, 24) != 1) {
+    ofs = mpeg->ofs + 1;
+
     if (mpeg->mpeg_skip != NULL) {
       if (mpeg->mpeg_skip (mpeg)) {
         return (1);
       }
     }
 
-    if (mpegd_skip (mpeg, 1)) {
+    if (mpegd_set_offset (mpeg, ofs)) {
       return (1);
     }
 
@@ -526,13 +530,25 @@ int mpegd_parse (mpeg_demux_t *mpeg)
             return (1);
           }
         }
-        mpegd_set_offset (mpeg, ofs);
+
+        if (mpegd_set_offset (mpeg, ofs)) {
+          return (1);
+        }
         break;
 
       default:
-        if (mpegd_skip (mpeg, 1)) {
+        ofs = mpeg->ofs + 1;
+
+        if (mpeg->mpeg_skip != NULL) {
+          if (mpeg->mpeg_skip (mpeg)) {
+            return (1);
+          }
+        }
+
+        if (mpegd_set_offset (mpeg, ofs)) {
           return (0);
         }
+
         break;
     }
   }
