@@ -1,14 +1,14 @@
 Begin4
 Title:		mpegdemux
-Version:	0.0.1
-Entered-date:	2003-02-02
-Description:	
-Keywords:	
+Version:	0.0.2
+Entered-date:	2003-03-06
+Description:	A MPEG1/2 system stream demultiplexer
+Keywords:	MPEG MPEG1 MPEG2 demux demultiplex extract
 Author:		Hampa Hug <hampa@hampa.ch> 
 Maintained-by:	Hampa Hug <hampa@hampa.ch> 
-Primary-site:	
-Alternate-site:	
-Original-site:	
+Primary-site:	http://www.hampa.ch/mpegdemux/index.html
+Alternate-site:	http://www.hampa.ch/mpegdemux/index.html
+Original-site:	http://www.hampa.ch/mpegdemux/index.html
 Platforms:	ISO-C
 Copying-policy:	GPL
 End
