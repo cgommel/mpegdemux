@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_demux.c,v 1.11 2003/07/12 11:32:49 hampa Exp $ */
+/* $Id: mpeg_demux.c,v 1.12 2003/07/12 12:09:09 hampa Exp $ */
 
 
 #include "config.h"
@@ -36,7 +36,7 @@
 #include "mpegdemux.h"
 
 
-static FILE *fp[256];
+static FILE *fp[512];
 
 static mpeg_buffer_t packet = { NULL, 0, 0 };
 
@@ -44,17 +44,11 @@ static mpeg_buffer_t packet = { NULL, 0, 0 };
 static
 int mpeg_demux_copy_spu (mpeg_demux_t *mpeg, FILE *fp, unsigned cnt)
 {
-  static int         first = 1;
   static unsigned    spucnt = 0;
   static int         half = 0;
   unsigned           i, n;
   unsigned char      buf[8];
   unsigned long long pts;
-
-  if (first) {
-    fwrite ("SPU ", 1, 4, fp);
-    first = 0;
-  }
 
   if (half) {
     mpegd_read (mpeg, buf, 1);
@@ -106,6 +100,46 @@ int mpeg_demux_copy_spu (mpeg_demux_t *mpeg, FILE *fp, unsigned cnt)
 }
 
 static
+FILE *mpeg_demux_open (mpeg_demux_t *mpeg, unsigned sid, unsigned ssid)
+{
+  FILE     *fp;
+  char     *name;
+  unsigned seq;
+
+  if (par_demux_name == NULL) {
+    return ((FILE *) mpeg->ext);
+  }
+
+  seq = (sid == 0xbd) ? ((sid << 8) + ssid) : sid;
+
+  name = mpeg_get_name (par_demux_name, seq);
+
+  fp = fopen (name, "wb");
+  if (fp == NULL) {
+    prt_err ("can't open stream file (%s)\n", name);
+
+    if (sid == 0xbd) {
+      par_substream[ssid] |= PAR_STREAM_EXCLUDE;
+    }
+    else {
+      par_stream[sid] |= PAR_STREAM_EXCLUDE;
+    }
+
+    free (name);
+
+    return (NULL);
+  }
+
+  free (name);
+
+  if ((sid == 0xbd) && par_dvdsub) {
+    fwrite ("SPU ", 1, 4, fp);
+  }
+
+  return (fp);
+}
+
+static
 int mpeg_demux_system_header (mpeg_demux_t *mpeg)
 {
   return (0);
@@ -115,6 +149,7 @@ static
 int mpeg_demux_packet (mpeg_demux_t *mpeg)
 {
   unsigned sid, ssid;
+  unsigned fpi;
   unsigned cnt;
   int      r;
 
@@ -127,8 +162,11 @@ int mpeg_demux_packet (mpeg_demux_t *mpeg)
 
   cnt = mpeg->packet.offset;
 
+  fpi = sid;
+
   /* select substream in private stream 1 (AC3 audio) */
   if (sid == 0xbd) {
+    fpi = 256 + ssid;
     cnt += 1;
 
     if (par_dvdac3) {
@@ -136,23 +174,10 @@ int mpeg_demux_packet (mpeg_demux_t *mpeg)
     }
   }
 
-  if (fp[sid] == NULL) {
-    if (par_demux_name == NULL) {
-      fp[sid] = (FILE *) mpeg->ext;
-    }
-    else {
-      char *name;
-
-      name = mpeg_get_name (par_demux_name, sid);
-      fp[sid] = fopen (name, "wb");
-      if (fp[sid] == NULL) {
-        prt_err ("can't open stream file (%s)\n", name);
-        par_stream[sid] |= PAR_STREAM_EXCLUDE;
-        free (name);
-        return (0);
-      }
-
-      free (name);
+  if (fp[fpi] == NULL) {
+    fp[fpi] = mpeg_demux_open (mpeg, sid, ssid);
+    if (fp[fpi] == NULL) {
+      return (1);
     }
   }
 
@@ -163,7 +188,7 @@ int mpeg_demux_packet (mpeg_demux_t *mpeg)
   cnt = mpeg->packet.size - cnt;
 
   if ((sid == 0xbd) && par_dvdsub) {
-    return (mpeg_demux_copy_spu (mpeg, fp[sid], cnt));
+    return (mpeg_demux_copy_spu (mpeg, fp[fpi], cnt));
   }
 
   r = 0;
@@ -181,7 +206,7 @@ int mpeg_demux_packet (mpeg_demux_t *mpeg)
     r = 1;
   }
 
-  if (mpeg_buf_write_clear (&packet, fp[sid])) {
+  if (mpeg_buf_write_clear (&packet, fp[fpi])) {
     r = 1;
   }
 
@@ -206,7 +231,7 @@ int mpeg_demux (FILE *inp, FILE *out)
   int          r;
   mpeg_demux_t *mpeg;
 
-  for (i = 0; i < 256; i++) {
+  for (i = 0; i < 512; i++) {
     fp[i] = NULL;
   }
 
@@ -226,7 +251,7 @@ int mpeg_demux (FILE *inp, FILE *out)
 
   mpegd_close (mpeg);
 
-  for (i = 0; i < 256; i++) {
+  for (i = 0; i < 512; i++) {
     if ((fp[i] != NULL) && (fp[i] != out)) {
       fclose (fp[i]);
     }
