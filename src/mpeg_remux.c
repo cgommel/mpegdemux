@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_remux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-05 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-03-07 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_remux.c,v 1.6 2003/03/05 10:35:17 hampa Exp $ */
+/* $Id: mpeg_remux.c,v 1.7 2003/03/07 08:16:10 hampa Exp $ */
 
 
 #include "config.h"
@@ -88,10 +88,8 @@ int mpeg_remux_pack_write (mpeg_demux_t *mpeg)
 static
 int mpeg_remux_system_header (mpeg_demux_t *mpeg)
 {
-  if (mpeg->shdr_cnt > 1) {
-    if (par_first || par_one_shdr) {
-      return (0);
-    }
+  if (par_no_shdr && (mpeg->shdr_cnt > 1)) {
+    return (0);
   }
 
   return (mpeg_remux_copy (mpeg, mpeg->shdr.size));
@@ -105,7 +103,7 @@ int mpeg_remux_packet (mpeg_demux_t *mpeg)
   sid = mpeg->packet.sid;
   ssid = mpeg->packet.ssid;
 
-  if (mpeg_stream_mark (sid, ssid)) {
+  if (mpeg_stream_excl (sid, ssid)) {
     return (0);
   }
 
@@ -120,12 +118,6 @@ static
 int mpeg_remux_pack (mpeg_demux_t *mpeg)
 {
   int r;
-
-  if (mpeg->pack_cnt > 1) {
-    if (par_first || par_one_pack) {
-      return (0);
-    }
-  }
 
   /*
     If we don't allow empty packs then copy the pack to the buffer,
@@ -151,7 +143,7 @@ int mpeg_remux_pack (mpeg_demux_t *mpeg)
 static
 int mpeg_remux_end (mpeg_demux_t *mpeg)
 {
-  if (par_one_end) {
+  if (par_no_end) {
     return (0);
   }
 
@@ -177,7 +169,7 @@ int mpeg_remux (FILE *inp, FILE *out)
 
   r = mpegd_parse (mpeg);
 
-  if (par_one_end) {
+  if (par_no_end) {
     unsigned char buf[4];
 
     buf[0] = (MPEG_END_CODE >> 24) & 0xff;

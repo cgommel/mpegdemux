@@ -16,9 +16,13 @@ mpegdemux \- MPEG1/2 system stream demultiplexer
 is an MPEG1/MPEG2 system stream demultiplexer. It can be
 used to list the contents of an MPEG system stream and to extract
 elementary streams.
-.
+
 .B mpegdemux
-has three primary modes of operation:
+has four primary modes of operation:
+.TP
+scan
+In this mode the MPEG system stream is scanned for elementary
+streams.
 .TP
 list
 In this mode the contents of an MPEG system stream are listed
@@ -45,6 +49,11 @@ Print usage information
 .TP
 .I --version
 Print version information
+.TP
+.I -c --scan
+Scan a system stream for elementary streams. This is the default
+mode. All streams and substreams are automatically selected when
+using this option.
 .TP
 .I -l, --list
 List the system headers, packs and packets in an MPEG system stream.
@@ -102,24 +111,20 @@ $ mpegdemux -d -b video_##.m1v -s 0xc0-0xcf src.mpg
 
 to get files video_c0.m1v, video-c1.m1v, ...
 .TP
-.I -f, --first
-Process only the first occurrence of system headers, packs
-and packets. Though this options also works for remuxing and
-demuxing, it is most useful when listing. When this option
-is used together with the
-.I --list
-option, only the first packet of each elementary stream will
-be listed.
+.I -h, --no-system-headers
+Don't print system headers in listing mode. Additionally, in
+remuxing mode, don't repeat system headers.
 .TP
-.I -h, --one-system-header
-Ignore all system headers but the first.
+.I -k, --no-packs
+Don't print packs in listing mode.
 .TP
-.I -k, --one-pack
-Ignore all packs but the first. This option is really useless.
+.I -t, --no-packets
+Don't print packets in listing mode.
 .TP
-.I -e, --one-end
-When remuxing, make sure that the output MPEG system stream
-has exactly one end code at the end.
+.I -e, --no-end
+Don't print end codes in listing mode. Additionally, in
+remuxing mode, make sure that there is exactly one end
+code at the end of the stream.
 .TP
 .I -P, --empty-packs
 When streams are removed during remuxing, packs can become
@@ -151,13 +156,21 @@ PTS (8 bytes)
 SPU packet
 
 and so on
+.TP
+.I -v, --verbose
+Be verbose. If this option is used some stream statistics will
+be printed in scan and list modes.
 
 .SH EXAMPLES
 
-Get an overview of the elementary streams contained in an MPEG
-system stream:
+Scan a system stream for elementary streams:
 
-$ mpegdemux -l -f -s all -p all src.mpg
+$ mpegdemux -c -v src.mpg
+
+
+List the contents of an MPEG system stream:
+
+$ mpegdemux -l -s all -p all src.mpg
 
 
 Extract the first video stream:

@@ -1,5 +1,5 @@
 # Makefile
-# $Id: Makefile.in,v 1.2 2003/02/02 21:19:50 hampa Exp $
+# $Id: Makefile.in,v 1.3 2003/03/07 08:16:10 hampa Exp $
 
 srcdir := @srcdir@
 topdir := @top_srcdir@
@@ -9,12 +9,17 @@ reldir := ..
 include $(reldir)/Makefile.inc
 
 
-SRC	:= message.c mpegdemux.c mpeg_demux.c mpeg_list.c mpeg_parse.c mpeg_remux.c
+SRC	:= message.c mpegdemux.c mpeg_demux.c mpeg_list.c \
+	mpeg_parse.c mpeg_remux.c mpeg_scan.c
 
-OBJ	:= message.o mpegdemux.o mpeg_demux.o mpeg_list.o mpeg_parse.o mpeg_remux.o
+OBJ	:= message.o mpegdemux.o mpeg_demux.o mpeg_list.o \
+	mpeg_parse.o mpeg_remux.o mpeg_scan.o
+
 OBJ_EXT	:=
 
-HDR	:= config.h message.h mpegdemux.h mpeg_demux.h mpeg_list.h mpeg_parse.h mpeg_remux.h
+HDR	:= config.h message.h mpegdemux.h mpeg_demux.h mpeg_list.h \
+	mpeg_parse.h mpeg_remux.h mpeg_scan.h
+
 HDR_EXT	:=
 
 MAN	:= mpegdemux.1
@@ -48,9 +53,10 @@ ifneq "$(MAN)" ""
 endif
 
 
-message.o: message.c $(SDP)
-mpegdemux.o: mpegdemux.c $(SDP)
-mpeg_demux.o: mpeg_demux.c $(SDP)
-mpeg_list.o: mpeg_list.c $(SDP)
-mpeg_parse.o: mpeg_parse.c $(SDP)
-mpeg_remux.o: mpeg_remux.c $(SDP)
+message.o:	message.c $(SDP)
+mpegdemux.o:	mpegdemux.c $(SDP)
+mpeg_demux.o:	mpeg_demux.c $(SDP)
+mpeg_list.o:	mpeg_list.c $(SDP)
+mpeg_parse.o:	mpeg_parse.c $(SDP)
+mpeg_remux.o:	mpeg_remux.c $(SDP)
+mpeg_scan.o:	mpeg_scan.c $(SDP)

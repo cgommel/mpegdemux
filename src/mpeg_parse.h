@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_parse.h                                               *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-02 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-03-07 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.h,v 1.9 2003/03/02 11:19:49 hampa Exp $ */
+/* $Id: mpeg_parse.h,v 1.10 2003/03/07 08:16:10 hampa Exp $ */
 
 
 #ifndef MPEG_PARSE_H
@@ -90,6 +90,7 @@ typedef struct mpeg_demux_t {
   unsigned long      end_cnt;
   unsigned long      skip_cnt;
   mpeg_stream_info_t streams[256];
+  mpeg_stream_info_t substreams[256];
 
   void               *ext;
 

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpegdemux.c                                                *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-06 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-03-07 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.c,v 1.12 2003/03/06 12:53:53 hampa Exp $ */
+/* $Id: mpegdemux.c,v 1.13 2003/03/07 08:16:10 hampa Exp $ */
 
 
 #include "config.h"
@@ -33,28 +33,29 @@
 #include "message.h"
 #include "mpeg_parse.h"
 #include "mpeg_list.h"
-#include "mpeg_remux.h"
 #include "mpeg_demux.h"
+#include "mpeg_remux.h"
+#include "mpeg_scan.h"
 #include "mpegdemux.h"
 
 
-static int    par_list = 1;
-static int    par_remux = 0;
-static int    par_demux = 0;
+static unsigned par_mode = PAR_MODE_SCAN;
 
-static FILE   *par_inp = NULL;
-static FILE   *par_out = NULL;
+static FILE     *par_inp = NULL;
+static FILE     *par_out = NULL;
 
-unsigned char par_stream[256];
-unsigned char par_substream[256];
-int           par_one_shdr = 0;
-int           par_one_pack = 0;
-int           par_one_end = 0;
-int           par_empty_pack = 0;
-unsigned char par_first = 0;
-int           par_dvdac3 = 0;
-int           par_dvdsub = 0;
-char          *par_demux_name = NULL;
+unsigned char   par_stream[256];
+unsigned char   par_substream[256];
+int             par_verbose = 0;
+int             par_no_shdr = 0;
+int             par_no_pack = 0;
+int             par_no_packet = 0;
+int             par_no_end = 0;
+int             par_empty_pack = 0;
+int             par_scan = 0;
+int             par_dvdac3 = 0;
+int             par_dvdsub = 0;
+char            *par_demux_name = NULL;
 
 
 static
@@ -62,16 +63,19 @@ void prt_help (void)
 {
   fputs (
     "usage: mpegdemux [options] [input [output]]\n"
-    "  -l, --list               List packets [default]\n"
+    "  -c, --scan               Scan the stream [default]\n"
+    "  -l, --list               List the stream contents\n"
     "  -r, --remux              Copy modified input to output\n"
     "  -d, --demux              Demultiplex streams\n"
     "  -s, --stream id          Select streams [none]\n"
     "  -p, --substream id       Select substreams [none]\n"
     "  -b, --base-name name     Set the base name for demuxed streams\n"
-    "  -h, --one-system-header  Only one system header [no]\n"
-    "  -k, --one-pack           Only one pack [no]\n"
-    "  -e, --one-end            Remove intermediate end codes [no]\n"
+    "  -h, --no-system-headers  Don't list system headers\n"
+    "  -k, --no-packs           Don't list packs\n"
+    "  -t, --no-packets         Don't list packets\n"
+    "  -e, --no-end             Don't list end codes [no]\n"
     "  -P, --empty-packs        Remux empty packs [no]\n"
+    "  -v, --verbose            Print some statistics [no]\n"
     "  -a, --ac3                Assume DVD AC3 headers in private streams\n"
     "  -u, --spu                Assume DVD subtitles in private streams\n",
     stdout
@@ -211,43 +215,50 @@ int str_get_streams (const char *str, unsigned char stm[256])
   return (0);
 }
 
-int mpeg_stream_mark (unsigned char sid, unsigned char ssid)
+int mpeg_stream_excl (unsigned char sid, unsigned char ssid)
 {
-  int r;
-
-  if (sid == 0xbd) {
-    r = (par_substream[ssid] & PAR_STREAM_SEEN) != 0;
-
-    par_stream[sid] |= PAR_STREAM_SEEN;
-    par_substream[ssid] |= PAR_STREAM_SEEN;
-
-    if (par_stream[sid] & PAR_STREAM_EXCLUDE) {
-      return (1);
-    }
-    if (par_substream[ssid] & PAR_STREAM_EXCLUDE) {
-      return (1);
-    }
-
-    if (par_first) {
-      return (r);
-    }
-
-    return (0);
-  }
-
-  r = (par_stream[sid] & PAR_STREAM_SEEN) != 0;
-
-  par_stream[sid] |= PAR_STREAM_SEEN;
-
   if (par_stream[sid] & PAR_STREAM_EXCLUDE) {
     return (1);
   }
 
-  if (par_first) {
-    return (r);
+  if (sid == 0xbd) {
+    if (par_substream[ssid] & PAR_STREAM_EXCLUDE) {
+      return (1);
+    }
   }
 
   return (0);
+}
+
+void mpeg_print_stats (mpeg_demux_t *mpeg, FILE *fp)
+{
+  unsigned i;
+
+  fprintf (fp,
+    "System headers: %lu\n"
+    "Packs:          %lu\n"
+    "Packets:        %lu\n"
+    "Skipped:        %lu bytes\n",
+    mpeg->shdr_cnt, mpeg->pack_cnt, mpeg->packet_cnt, mpeg->skip_cnt
+  );
+
+  for (i = 0; i < 256; i++) {
+    if (mpeg->streams[i].packet_cnt > 0) {
+      fprintf (fp, "Stream %02x:      %lu packets / %llu bytes\n",
+        i, mpeg->streams[i].packet_cnt, mpeg->streams[i].size
+      );
+    }
+  }
+
+  for (i = 0; i < 256; i++) {
+    if (mpeg->substreams[i].packet_cnt > 0) {
+      fprintf (fp, "Substream %02x:   %lu packets / %llu bytes\n",
+        i, mpeg->substreams[i].packet_cnt, mpeg->substreams[i].size
+      );
+    }
+  }
+
+  fflush (fp);
 }
 
 int main (int argc, char **argv)
@@ -274,33 +285,24 @@ int main (int argc, char **argv)
 
   argi = 1;
   while (argi < argc) {
-    if (str_isarg2 (argv[argi], "-l", "--list")) {
-      par_list = 1;
-      par_remux = 0;
-      par_demux = 0;
+    if (str_isarg2 (argv[argi], "-c", "--scan")) {
+      unsigned i;
+
+      par_mode = PAR_MODE_SCAN;
+
+      for (i = 0; i < 256; i++) {
+        par_stream[i] &= ~PAR_STREAM_EXCLUDE;
+        par_substream[i] &= ~PAR_STREAM_EXCLUDE;
+      }
+    }
+    else if (str_isarg2 (argv[argi], "-l", "--list")) {
+      par_mode = PAR_MODE_LIST;
     }
     else if (str_isarg2 (argv[argi], "-r", "--remux")) {
-      par_list = 0;
-      par_remux = 1;
-      par_demux = 0;
+      par_mode = PAR_MODE_REMUX;
     }
     else if (str_isarg2 (argv[argi], "-d", "--demux")) {
-      par_list = 0;
-      par_remux = 0;
-      par_demux = 1;
-    }
-    else if (str_isarg2 (argv[argi], "-b", "--base-name")) {
-      argi += 1;
-      if (argi >= argc) {
-        prt_err ("%s: missing base name\n");
-        return (1);
-      }
-
-      if (par_demux_name != NULL) {
-        free (par_demux_name);
-      }
-
-      par_demux_name = str_clone (argv[argi]);
+      par_mode = PAR_MODE_DEMUX;
     }
     else if (str_isarg2 (argv[argi], "-s", "--stream")) {
       argi += 1;
@@ -326,26 +328,42 @@ int main (int argc, char **argv)
         return (1);
       }
     }
+    else if (str_isarg2 (argv[argi], "-b", "--base-name")) {
+      argi += 1;
+      if (argi >= argc) {
+        prt_err ("%s: missing base name\n");
+        return (1);
+      }
+
+      if (par_demux_name != NULL) {
+        free (par_demux_name);
+      }
+
+      par_demux_name = str_clone (argv[argi]);
+    }
+    else if (str_isarg2 (argv[argi], "-h", "--no-system-headers")) {
+      par_no_shdr = 1;
+    }
+    else if (str_isarg2 (argv[argi], "-k", "--no-packs")) {
+      par_no_pack = 1;
+    }
+    else if (str_isarg2 (argv[argi], "-t", "--no-packets")) {
+      par_no_packet = 1;
+    }
+    else if (str_isarg2 (argv[argi], "-e", "--no-end")) {
+      par_no_end = 1;
+    }
+    else if (str_isarg2 (argv[argi], "-P", "--empty-packs")) {
+      par_empty_pack = 1;
+    }
+    else if (str_isarg2 (argv[argi], "-v", "--verbose")) {
+      par_verbose = 1;
+    }
     else if (str_isarg2 (argv[argi], "-a", "--ac3")) {
       par_dvdac3 = 1;
     }
     else if (str_isarg2 (argv[argi], "-u", "--spu")) {
       par_dvdsub = 1;
-    }
-    else if (str_isarg2 (argv[argi], "-h", "--one-system-header")) {
-      par_one_shdr = 1;
-    }
-    else if (str_isarg2 (argv[argi], "-k", "--one-packs")) {
-      par_one_pack = 1;
-    }
-    else if (str_isarg2 (argv[argi], "-e", "--one-end")) {
-      par_one_end = 1;
-    }
-    else if (str_isarg2 (argv[argi], "-P", "--empty-packs")) {
-      par_empty_pack = 1;
-    }
-    else if (str_isarg2 (argv[argi], "-f", "--first")) {
-      par_first = 1;
     }
     else if ((argv[argi][0] != '-') || (argv[argi][1] == 0)) {
       if (par_inp == NULL) {
@@ -394,17 +412,26 @@ int main (int argc, char **argv)
     par_out = stdout;
   }
 
-  if (par_list) {
-    r = mpeg_list (par_inp, par_out);
-  }
-  else if (par_remux) {
-    r = mpeg_remux (par_inp, par_out);
-  }
-  else if (par_demux) {
-    r = mpeg_demux (par_inp, par_out);
-  }
-  else {
-    r = 1;
+  switch (par_mode) {
+    case PAR_MODE_SCAN:
+      r = mpeg_scan (par_inp, par_out);
+      break;
+
+    case PAR_MODE_LIST:
+      r = mpeg_list (par_inp, par_out);
+      break;
+
+    case PAR_MODE_REMUX:
+      r = mpeg_remux (par_inp, par_out);
+      break;
+
+    case PAR_MODE_DEMUX:
+      r = mpeg_demux (par_inp, par_out);
+      break;
+
+    default:
+      r = 1;
+      break;
   }
 
   if (r) {

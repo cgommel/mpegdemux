@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_list.c                                                *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-02 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-03-07 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_list.c,v 1.9 2003/03/02 11:19:49 hampa Exp $ */
+/* $Id: mpeg_list.c,v 1.10 2003/03/07 08:16:10 hampa Exp $ */
 
 
 #include "config.h"
@@ -40,10 +40,8 @@ int mpeg_list_system_header (mpeg_demux_t *mpeg)
 {
   FILE *fp;
 
-  if (mpeg->shdr_cnt > 1) {
-    if (par_first || par_one_shdr) {
-      return (0);
-    }
+  if (par_no_shdr) {
+    return (0);
   }
 
   fp = (FILE *) mpeg->ext;
@@ -61,20 +59,35 @@ int mpeg_list_packet (mpeg_demux_t *mpeg)
 {
   FILE     *fp;
   unsigned sid, ssid;
+  char     *type;
+
+  if (par_no_packet) {
+    return (0);
+  }
 
   sid = mpeg->packet.sid;
   ssid = mpeg->packet.ssid;
 
-  if (mpeg_stream_mark (sid, ssid)) {
+  if (mpeg_stream_excl (sid, ssid)) {
     return (0);
   }
 
   fp = (FILE *) mpeg->ext;
 
-  fprintf (fp, "%08llx: packet[%lu]: sid=%02x ssid=%02x size=%u type=%u pts=%llu[%.4f]\n",
+  if (mpeg->packet.type == 1) {
+    type = "MPEG1";
+  }
+  else if (mpeg->packet.type == 2) {
+    type = "MPEG2";
+  }
+  else {
+    type = "UNKWN";
+  }
+
+  fprintf (fp, "%08llx: packet[%lu]: sid=%02x ssid=%02x size=%u %s pts=%llu[%.4f]\n",
     mpeg->ofs, mpeg->streams[sid].packet_cnt - 1,
     sid, ssid, mpeg->packet.size,
-    mpeg->packet.type,
+    type,
     mpeg->packet.pts, (double) mpeg->packet.pts / 90000.0
   );
 
@@ -86,10 +99,8 @@ int mpeg_list_pack (mpeg_demux_t *mpeg)
 {
   FILE *fp;
 
-  if (mpeg->pack_cnt > 1) {
-    if (par_first || par_one_pack) {
-      return (0);
-    }
+  if (par_no_pack) {
+    return (0);
   }
 
   fp = (FILE *) mpeg->ext;
@@ -112,6 +123,10 @@ int mpeg_list_end (mpeg_demux_t *mpeg)
 {
   FILE *fp;
 
+  if (par_no_end) {
+    return (0);
+  }
+
   fp = (FILE *) mpeg->ext;
 
   fprintf (fp, "%08llx: end\n", mpeg->ofs);
@@ -121,7 +136,6 @@ int mpeg_list_end (mpeg_demux_t *mpeg)
 
 int mpeg_list (FILE *inp, FILE *out)
 {
-  unsigned     i;
   int          r;
   mpeg_demux_t *mpeg;
 
@@ -141,23 +155,8 @@ int mpeg_list (FILE *inp, FILE *out)
 
   mpegd_close (mpeg);
 
-  fprintf (out,
-    "\n"
-    "System headers: %lu\n"
-    "Packs:          %lu\n"
-    "Packets:        %lu\n"
-    "Skipped:        %lu bytes\n"
-    "Next:           %08lx\n",
-    mpeg->shdr_cnt, mpeg->pack_cnt, mpeg->packet_cnt, mpeg->skip_cnt,
-    mpegd_get_bits (mpeg, 0, 32)
-  );
-
-  for (i = 0; i < 256; i++) {
-    if (mpeg->streams[i].packet_cnt > 0) {
-      fprintf (out, "Stream %02x:      %lu packets / %llu bytes\n",
-        i, mpeg->streams[i].packet_cnt, mpeg->streams[i].size
-      );
-    }
+  if (par_verbose) {
+    mpeg_print_stats (mpeg, out);
   }
 
   return (r);
