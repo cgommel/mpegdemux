@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_list.c                                                *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-04-09 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-07-27 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_list.c,v 1.12 2003/04/08 23:20:59 hampa Exp $ */
+/* $Id: mpeg_list.c,v 1.13 2003/07/28 06:12:20 hampa Exp $ */
 
 
 #include "config.h"
@@ -114,12 +114,23 @@ int mpeg_list_packet (mpeg_demux_t *mpeg)
     type = "UNKWN";
   }
 
-  fprintf (fp, "%08llx: packet[%lu]: sid=%02x ssid=%02x size=%u %s pts=%llu[%.4f]\n",
-    mpeg->ofs, mpeg->streams[sid].packet_cnt - 1,
-    sid, ssid, mpeg->packet.size,
+  fprintf (fp,
+    "%08llx: packet[%lu]: %s sid=%02x ssid=%02x size=%u",
+    mpeg->ofs,
+    mpeg->streams[sid].packet_cnt - 1,
     type,
-    mpeg->packet.pts, (double) mpeg->packet.pts / 90000.0
+    sid, ssid, mpeg->packet.size
   );
+
+  if (mpeg->packet.have_pts || mpeg->packet.have_dts) {
+    fprintf (fp,
+      " pts=%llu[%.4f] dts=%llu[%.4f]",
+      mpeg->packet.pts, (double) mpeg->packet.pts / 90000.0,
+      mpeg->packet.dts, (double) mpeg->packet.dts / 90000.0
+    );
+  }
+
+  fputs ("\n", fp);
 
   return (0);
 }
