@@ -2,6 +2,7 @@
 
 	* Streams can now be declared invalid
 	* Implemented splitting system stream at end codes when remuxing
+	* Made the transition from CVS to SVN
 
 0.1.0	2003-08-10
 
