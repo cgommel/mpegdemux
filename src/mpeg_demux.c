@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_demux.c,v 1.2 2003/02/04 03:25:19 hampa Exp $ */
+/* $Id: mpeg_demux.c,v 1.3 2003/02/04 17:10:20 hampa Exp $ */
 
 
 #include <stdio.h>
@@ -113,49 +113,49 @@ int mpeg_demux_system_header (mpeg_demux_t *mpeg)
 static
 int mpeg_demux_packet (mpeg_demux_t *mpeg)
 {
-  unsigned id;
+  unsigned sid, ssid;
   unsigned cnt;
   int      r;
 
-  id = mpeg->packet_stm_id;
+  sid = mpeg->packet_stm_id;
+  ssid = 0;
 
-  if (par_stream[id] & PAR_STREAM_EXCLUDE) {
+  cnt = mpeg->packet_offset;
+
+  /* select substream in private stream 1 (AC3 audio) */
+  if (sid == 0xbd) {
+    ssid = mpegd_get_bits (mpeg, 8 * mpeg->packet_offset, 8);
+
+    if (par_dvdac3) {
+      cnt += 4;
+    }
+  }
+
+  if (mpeg_stream_mark (sid, ssid)) {
     return (0);
   }
 
-  if (fp[id] == NULL) {
+  if (fp[sid] == NULL) {
     char *name;
 
-    name = mpeg_demux_get_name (par_demux_name, id);
-    fp[id] = fopen (name, "wb");
-    if (fp[id] == NULL) {
+    name = mpeg_demux_get_name (par_demux_name, sid);
+    fp[sid] = fopen (name, "wb");
+    if (fp[sid] == NULL) {
       prt_err ("can't open stream file (%s)\n", name);
-      par_stream[id] |= PAR_STREAM_EXCLUDE;
+      par_stream[sid] |= PAR_STREAM_EXCLUDE;
       free (name);
       return (0);
     }
     free (name);
   }
 
-  if (mpeg->packet_offset > 0) {
-    mpegd_skip (mpeg, mpeg->packet_offset);
+  if (cnt > 0) {
+    mpegd_skip (mpeg, cnt);
   }
 
-  cnt = (mpeg->packet_size + 6) - mpeg->packet_offset;
+  cnt = (mpeg->packet_size + 6) - cnt;
 
-  /* select substream in private stream 1 (AC3 audio) */
-  if ((id == 0xbd) && (par_substream < 256)) {
-    if (mpegd_get_bits (mpeg, 0, 8) != par_substream) {
-      return (0);
-    }
-
-    /* skip DVD specific frame header */
-    mpegd_skip (mpeg, 4);
-
-    cnt -= 4;
-  }
-
-  r = mpeg_demux_copy (mpeg, fp[id], cnt);
+  r = mpeg_demux_copy (mpeg, fp[sid], cnt);
 
   return (r);
 }

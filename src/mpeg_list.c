@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_list.c,v 1.5 2003/02/04 03:25:19 hampa Exp $ */
+/* $Id: mpeg_list.c,v 1.6 2003/02/04 17:10:22 hampa Exp $ */
 
 
 #include <stdio.h>
@@ -38,7 +38,7 @@ int mpeg_list_system_header (mpeg_demux_t *mpeg)
 {
   FILE *fp;
 
-  if (par_list_first && (mpeg->shdr_cnt > 1)) {
+  if (par_first && (mpeg->shdr_cnt > 1)) {
     return (0);
   }
 
@@ -56,34 +56,26 @@ static
 int mpeg_list_packet (mpeg_demux_t *mpeg)
 {
   FILE     *fp;
-  unsigned id;
-  unsigned substream;
+  unsigned sid, ssid;
 
-  id = mpeg->packet_stm_id;
+  sid = mpeg->packet_stm_id;
+  ssid = 0;
 
-  if (par_stream[id] & PAR_STREAM_EXCLUDE) {
+  if (sid == 0xbd) {
+    ssid = mpegd_get_bits (mpeg, 8 * mpeg->packet_offset, 8);
+  }
+
+  if (mpeg_stream_mark (sid, ssid)) {
     return (0);
-  }
-
-  if (par_list_first && (mpeg->streams[id].packet_cnt > 1)) {
-    return (0);
-  }
-
-  if (id == 0xbd) {
-    substream = mpegd_get_bits (mpeg, 8 * mpeg->packet_offset, 8);
-  }
-  else {
-    substream = 0;
   }
 
   fp = (FILE *) mpeg->ext;
 
-  fprintf (fp, "%08llx: packet[%lu]: stream id=%02x size=%u type=%u pts=%llu[%.4f] sub=%02x\n",
-    mpeg->ofs, mpeg->streams[id].packet_cnt - 1,
-    mpeg->packet_stm_id, mpeg->packet_size,
+  fprintf (fp, "%08llx: packet[%lu]: sid=%02x ssid=%02x size=%u type=%u pts=%llu[%.4f]\n",
+    mpeg->ofs, mpeg->streams[sid].packet_cnt - 1,
+    sid, ssid, mpeg->packet_size,
     mpeg->packet_type,
-    mpeg->packet_pts, (double) mpeg->packet_pts / 90000.0,
-    substream
+    mpeg->packet_pts, (double) mpeg->packet_pts / 90000.0
   );
 
   return (0);
@@ -94,7 +86,7 @@ int mpeg_list_pack (mpeg_demux_t *mpeg)
 {
   FILE *fp;
 
-  if (par_list_first && (mpeg->pack_cnt > 1)) {
+  if (par_first && (mpeg->pack_cnt > 1)) {
     return (0);
   }
 

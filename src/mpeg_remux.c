@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_remux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-02-04 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_remux.c,v 1.1 2003/02/02 20:26:13 hampa Exp $ */
+/* $Id: mpeg_remux.c,v 1.2 2003/02/04 17:10:22 hampa Exp $ */
 
 
 #include <stdio.h>
@@ -79,7 +79,16 @@ int mpeg_remux_system_header (mpeg_demux_t *mpeg)
 static
 int mpeg_remux_packet (mpeg_demux_t *mpeg)
 {
-  if (par_stream[mpeg->packet_stm_id] & PAR_STREAM_EXCLUDE) {
+  unsigned sid, ssid;
+
+  sid = mpeg->packet_stm_id;
+  ssid = 0;
+
+  if (sid == 0xbd) {
+    ssid = mpegd_get_bits (mpeg, 8 * mpeg->packet_offset, 8);
+  }
+
+  if (mpeg_stream_mark (sid, ssid)) {
     return (0);
   }
 

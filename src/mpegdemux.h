@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.h,v 1.2 2003/02/04 03:25:19 hampa Exp $ */
+/* $Id: mpegdemux.h,v 1.3 2003/02/04 17:10:22 hampa Exp $ */
 
 
 #ifndef MPEGDEMUX_H
@@ -32,10 +32,14 @@
 
 
 extern unsigned char par_stream[256];
+extern unsigned char par_substream[256];
 extern unsigned char par_rep_sh;
-extern unsigned char par_list_first;
+extern unsigned char par_first;
 extern char          *par_demux_name;
-extern unsigned      par_substream;
+extern int           par_dvdac3;
+
+
+int mpeg_stream_mark (unsigned char sid, unsigned char ssid);
 
 
 #endif

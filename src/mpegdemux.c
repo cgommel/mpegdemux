@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.c,v 1.4 2003/02/04 03:25:19 hampa Exp $ */
+/* $Id: mpegdemux.c,v 1.5 2003/02/04 17:10:22 hampa Exp $ */
 
 
 #include "config.h"
@@ -46,9 +46,10 @@ static FILE   *par_inp = NULL;
 static FILE   *par_out = NULL;
 
 unsigned char par_stream[256];
+unsigned char par_substream[256];
 unsigned char par_rep_sh = 0;
-unsigned char par_list_first = 0;
-unsigned      par_substream = 0xffff;
+unsigned char par_first = 0;
+int           par_dvdac3 = 0;
 
 char          *par_demux_name = NULL;
 
@@ -61,12 +62,11 @@ void prt_help (void)
     "  -l, --list            List packets [default]\n"
     "  -r, --remux           Copy modified input to output\n"
     "  -d, --demux           Demux streams\n"
-    "  -s, --stream id       Include a stream [all]\n"
-    "  -x, --exclude id      Exclude a stream [none]\n"
-    "  -i, --invert          Invert exclude mask\n"
-    "  -h, --system-headers  Repeat system headers [no]\n"
+    "  -s, --stream id       Select streams [none]\n"
+    "  -p, --substream id    Select substreams [none]\n"
     "  -b, --base-name name  Set the base name for demuxed streams\n"
-    "  -a, --audio-substream id  Set the AC3 substream number\n",
+    "  -h, --system-headers  Repeat system headers [no]\n"
+    "  -a, --ac3             Assume DVD AC3 headers\n",
     stdout
   );
 }
@@ -118,10 +118,136 @@ int str_isarg2 (const char *str, const char *arg1, const char *arg2)
   return (0);
 }
 
+const char *str_skip_white (const char *str)
+{
+  while ((*str == ' ') || (*str == '\t')) {
+    str += 1;
+  }
+
+  return (str);
+}
+
+int str_get_streams (const char *str, unsigned char stm[256])
+{
+  unsigned i;
+  int      incl;
+  char     *tmp;
+  unsigned stm1, stm2;
+
+  incl = 1;
+
+  while (*str != 0) {
+    str = str_skip_white (str);
+
+    if (*str == '+') {
+      str += 1;
+      incl = 1;
+    }
+    else if (*str == '-') {
+      str += 1;
+      incl = 0;
+    }
+    else {
+      incl = 1;
+    }
+
+    if (strncmp (str, "all", 3) == 0) {
+      str += 3;
+      stm1 = 0;
+      stm2 = 255;
+    }
+    else if (strncmp (str, "none", 4) == 0) {
+      str += 4;
+      stm1 = 0;
+      stm2 = 255;
+      incl = !incl;
+    }
+    else {
+      stm1 = (unsigned) strtoul (str, &tmp, 0);
+      if (tmp == str) {
+        return (1);
+      }
+
+      str = tmp;
+
+      if (*str == '-') {
+        str += 1;
+        stm2 = (unsigned) strtoul (str, &tmp, 0);
+        if (tmp == str) {
+          return (1);
+        }
+        str = tmp;
+      }
+      else {
+        stm2 = stm1;
+      }
+    }
+
+    if (incl) {
+      for (i = stm1; i <= stm2; i++) {
+        stm[i] &= ~PAR_STREAM_EXCLUDE;
+      }
+    }
+    else {
+      for (i = stm1; i <= stm2; i++) {
+        stm[i] |= PAR_STREAM_EXCLUDE;
+      }
+    }
+
+    str = str_skip_white (str);
+
+    if (*str == '/') {
+      str += 1;
+    }
+  }
+
+  return (0);
+}
+
+int mpeg_stream_mark (unsigned char sid, unsigned char ssid)
+{
+  int r;
+
+  if (sid == 0xbd) {
+    r = (par_substream[ssid] & PAR_STREAM_SEEN) != 0;
+
+    par_stream[sid] |= PAR_STREAM_SEEN;
+    par_substream[ssid] |= PAR_STREAM_SEEN;
+
+    if (par_stream[sid] & PAR_STREAM_EXCLUDE) {
+      return (1);
+    }
+    if (par_substream[ssid] & PAR_STREAM_EXCLUDE) {
+      return (1);
+    }
+
+    if (par_first) {
+      return (r);
+    }
+
+    return (0);
+  }
+
+  r = (par_stream[sid] & PAR_STREAM_SEEN) != 0;
+
+  par_stream[sid] |= PAR_STREAM_SEEN;
+
+  if (par_stream[sid] & PAR_STREAM_EXCLUDE) {
+    return (1);
+  }
+
+  if (par_first) {
+    return (r);
+  }
+
+  return (0);
+}
+
 int main (int argc, char **argv)
 {
-  int argi;
-  int r;
+  int      argi;
+  unsigned i;
+  int      r;
 
   if (argc == 2) {
     if (str_isarg1 (argv[1], "--version")) {
@@ -132,6 +258,11 @@ int main (int argc, char **argv)
       prt_help();
       return (0);
     }
+  }
+
+  for (i = 0; i < 256; i++) {
+    par_stream[i] = PAR_STREAM_EXCLUDE;
+    par_substream[i] = PAR_STREAM_EXCLUDE;
   }
 
   argi = 1;
@@ -165,52 +296,37 @@ int main (int argc, char **argv)
       par_demux_name = str_clone (argv[argi]);
     }
     else if (str_isarg2 (argv[argi], "-s", "--stream")) {
-      unsigned id;
-
       argi += 1;
       if (argi >= argc) {
         prt_err ("%s: missing stream id\n", argv[0]);
         return (1);
       }
 
-      id = strtoul (argv[argi], NULL, 0) & 0xff;
-      par_stream[id] &= ~PAR_STREAM_EXCLUDE;
-    }
-    else if (str_isarg2 (argv[argi], "-x", "--exclude")) {
-      unsigned id;
-
-      argi += 1;
-      if (argi >= argc) {
-        prt_err ("%s: missing stream id\n", argv[0]);
+      if (str_get_streams (argv[argi], par_stream)) {
+        prt_err ("%s: bad stream id (%s)\n", argv[0], argv[argi]);
         return (1);
       }
-
-      id = strtoul (argv[argi], NULL, 0) & 0xff;
-      par_stream[id] |= PAR_STREAM_EXCLUDE;
     }
-    else if (str_isarg2 (argv[argi], "-i", "--invert")) {
-      unsigned i;
-
-      for (i = 0; i < 256; i++) {
-        if (par_stream[i] == 0) {
-          par_stream[i] ^= PAR_STREAM_EXCLUDE;
-        }
-      }
-    }
-    else if (str_isarg2 (argv[argi], "-a", "--audio-substream")) {
+    else if (str_isarg2 (argv[argi], "-p", "--substream")) {
       argi += 1;
       if (argi >= argc) {
         prt_err ("%s: missing substream id\n", argv[0]);
         return (1);
       }
 
-      par_substream = strtoul (argv[argi], NULL, 0) & 0xff;
+      if (str_get_streams (argv[argi], par_substream)) {
+        prt_err ("%s: bad substream id (%s)\n", argv[0], argv[argi]);
+        return (1);
+      }
+    }
+    else if (str_isarg2 (argv[argi], "-a", "--ac3")) {
+      par_dvdac3 = 1;
     }
     else if (str_isarg2 (argv[argi], "-h", "--system-headers")) {
       par_rep_sh = 1;
     }
     else if (str_isarg2 (argv[argi], "-f", "--first")) {
-      par_list_first = 1;
+      par_first = 1;
     }
     else if ((argv[argi][0] != '-') || (argv[argi][1] == 0)) {
       if (par_inp == NULL) {
