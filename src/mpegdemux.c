@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.c,v 1.1 2003/02/02 20:26:13 hampa Exp $ */
+/* $Id: mpegdemux.c,v 1.2 2003/02/02 20:31:24 hampa Exp $ */
 
 
 #include "config.h"
@@ -73,7 +73,8 @@ void prt_version (void)
 {
   fputs (
     "mpegdemux version " MPEGDEMUX_VERSION_STR
-    " (compiled " __DATE__ " " __TIME__ ")\n",
+    " (compiled " __DATE__ " " __TIME__ ")\n\n"
+    "Copyright (C) 2003 Hampa Hug <hampa@hampa.ch>\n",
     stdout
   );
 }
