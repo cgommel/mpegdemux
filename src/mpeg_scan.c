@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_scan.c,v 1.2 2003/03/08 08:23:32 hampa Exp $ */
+/* $Id: mpeg_scan.c,v 1.3 2003/03/08 21:12:26 hampa Exp $ */
 
 
 #include "config.h"
@@ -72,6 +72,8 @@ int mpeg_scan_packet (mpeg_demux_t *mpeg)
     mpeg->packet.type,
     mpeg->packet.pts, (double) mpeg->packet.pts / 90000.0
   );
+
+  fflush (fp);
 
   return (0);
 }
