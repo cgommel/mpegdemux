@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_scan.c                                                *
  * Created:       2003-02-07 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-04-09 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-06-07 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_scan.c,v 1.5 2003/04/08 23:21:11 hampa Exp $ */
+/* $Id: mpeg_scan.c,v 1.6 2003/06/07 04:20:14 hampa Exp $ */
 
 
 #include "config.h"
@@ -96,6 +96,14 @@ int mpeg_scan_pack (mpeg_demux_t *mpeg)
 static
 int mpeg_scan_end (mpeg_demux_t *mpeg)
 {
+  FILE *fp;
+
+  fp = (FILE *) mpeg->ext;
+
+  if (!par_no_end) {
+    fprintf (fp, "%08llx: end code\n", mpeg->ofs);
+  }
+
   return (0);
 }
 
