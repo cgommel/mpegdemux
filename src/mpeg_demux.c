@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_demux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-02 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-03-04 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_demux.c,v 1.5 2003/03/02 11:19:28 hampa Exp $ */
+/* $Id: mpeg_demux.c,v 1.6 2003/03/05 07:43:58 hampa Exp $ */
 
 
 #include "config.h"
@@ -107,6 +107,70 @@ int mpeg_demux_copy (mpeg_demux_t *mpeg, FILE *fp, unsigned n)
 }
 
 static
+int mpeg_demux_copy_spu (mpeg_demux_t *mpeg, FILE *fp, unsigned cnt)
+{
+  static int         first = 1;
+  static unsigned    spucnt = 0;
+  static int         half = 0;
+  unsigned           i, n;
+  unsigned char      buf[8];
+  unsigned long long pts;
+
+  if (first) {
+    fwrite ("SPU ", 1, 4, fp);
+    first = 0;
+  }
+
+  if (half) {
+    mpegd_read (mpeg, buf, 1);
+    fwrite (buf, 1, 1, fp);
+    spucnt = (spucnt << 8) + buf[0];
+    half = 0;
+
+    spucnt -= 2;
+    cnt -= 1;
+  }
+
+  while (cnt > 0) {
+    if (spucnt == 0) {
+      pts = mpeg->packet.pts;
+      for (i = 0; i < 8; i++) {
+        buf[7 - i] = pts & 0xff;
+        pts = pts >> 8;
+      }
+      fwrite (buf, 1, 8, fp);
+
+      if (cnt == 1) {
+        mpegd_read (mpeg, buf, 1);
+        fwrite (buf, 1, 1, fp);
+        spucnt = buf[0];
+        half = 1;
+        return (0);
+      }
+
+      mpegd_read (mpeg, buf, 2);
+      fwrite (buf, 1, 2, fp);
+
+      spucnt = (buf[0] << 8) + buf[1];
+      if (spucnt < 2) {
+        return (1);
+      }
+
+      spucnt -= 2;
+      cnt -= 2;
+    }
+
+    n = (cnt < spucnt) ? cnt : spucnt;
+
+    mpeg_demux_copy (mpeg, fp, n);
+    cnt -= n;
+    spucnt -= n;
+  }
+
+  return (0);
+}
+
+static
 int mpeg_demux_system_header (mpeg_demux_t *mpeg)
 {
   return (0);
@@ -157,7 +221,12 @@ int mpeg_demux_packet (mpeg_demux_t *mpeg)
 
   cnt = mpeg->packet.size - cnt;
 
-  r = mpeg_demux_copy (mpeg, fp[sid], cnt);
+  if ((sid == 0xbd) && par_dvdsub) {
+    r = mpeg_demux_copy_spu (mpeg, fp[sid], cnt);
+  }
+  else {
+    r = mpeg_demux_copy (mpeg, fp[sid], cnt);
+  }
 
   return (r);
 }
