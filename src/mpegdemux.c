@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpegdemux.c                                                *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-07 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-03-08 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.c,v 1.13 2003/03/07 08:16:10 hampa Exp $ */
+/* $Id: mpegdemux.c,v 1.14 2003/03/08 08:23:32 hampa Exp $ */
 
 
 #include "config.h"
@@ -46,7 +46,6 @@ static FILE     *par_out = NULL;
 
 unsigned char   par_stream[256];
 unsigned char   par_substream[256];
-int             par_verbose = 0;
 int             par_no_shdr = 0;
 int             par_no_pack = 0;
 int             par_no_packet = 0;
@@ -75,7 +74,6 @@ void prt_help (void)
     "  -t, --no-packets         Don't list packets\n"
     "  -e, --no-end             Don't list end codes [no]\n"
     "  -P, --empty-packs        Remux empty packs [no]\n"
-    "  -v, --verbose            Print some statistics [no]\n"
     "  -a, --ac3                Assume DVD AC3 headers in private streams\n"
     "  -u, --spu                Assume DVD subtitles in private streams\n",
     stdout
@@ -355,9 +353,6 @@ int main (int argc, char **argv)
     }
     else if (str_isarg2 (argv[argi], "-P", "--empty-packs")) {
       par_empty_pack = 1;
-    }
-    else if (str_isarg2 (argv[argi], "-v", "--verbose")) {
-      par_verbose = 1;
     }
     else if (str_isarg2 (argv[argi], "-a", "--ac3")) {
       par_dvdac3 = 1;

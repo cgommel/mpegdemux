@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_list.c                                                *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-07 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-03-08 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_list.c,v 1.10 2003/03/07 08:16:10 hampa Exp $ */
+/* $Id: mpeg_list.c,v 1.11 2003/03/08 08:23:32 hampa Exp $ */
 
 
 #include "config.h"
@@ -153,11 +153,9 @@ int mpeg_list (FILE *inp, FILE *out)
 
   r = mpegd_parse (mpeg);
 
-  mpegd_close (mpeg);
+  mpeg_print_stats (mpeg, out);
 
-  if (par_verbose) {
-    mpeg_print_stats (mpeg, out);
-  }
+  mpegd_close (mpeg);
 
   return (r);
 }
