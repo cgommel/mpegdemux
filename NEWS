@@ -1,4 +1,4 @@
-0.1.2	2004-09-19
+0.1.2	2004-09-19	r81
 
 	* Streams can now be declared invalid
 	* Implemented splitting system stream at end codes when remuxing

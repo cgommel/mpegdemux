@@ -122,6 +122,14 @@ is "-" then all streams that have not yet been selected by
 are made invalid.
 \
 .TP
+.BI "-m, --packet-max-size " int
+Set the maximum packet size. Packets in the input stream that are
+larger are considered invalid. As with the
+.B -i
+option, the packet is not simply skipped but parsed as MPEG
+system stream data.
+\
+.TP
 .BI "-b, --base-name " name
 When demultiplexing more than one stream, the output file names
 can be set using this option. To generate the output file name

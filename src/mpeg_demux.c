@@ -5,8 +5,8 @@
 /*****************************************************************************
  * File name:     mpeg_demux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-10-21 by Hampa Hug <hampa@hampa.ch>                   *
- * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
+ * Last modified: 2004-10-12 by Hampa Hug <hampa@hampa.ch>                   *
+ * Copyright:     (C) 2003-2004 Hampa Hug <hampa@hampa.ch>                   *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_demux.c,v 1.14 2003/10/21 04:39:51 hampa Exp $ */
+/* $Id$ */
 
 
 #include "config.h"
@@ -119,10 +119,10 @@ FILE *mpeg_demux_open (mpeg_demux_t *mpeg, unsigned sid, unsigned ssid)
       prt_err ("can't open stream file (%s)\n", name);
 
       if (sid == 0xbd) {
-        par_substream[ssid] |= PAR_STREAM_EXCLUDE;
+        par_substream[ssid] &= ~PAR_STREAM_SELECT;
       }
       else {
-        par_stream[sid] |= PAR_STREAM_EXCLUDE;
+        par_stream[sid] &= ~PAR_STREAM_SELECT;
       }
 
       free (name);

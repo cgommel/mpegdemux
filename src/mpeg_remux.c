@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_remux.c,v 1.11 2003/09/10 17:05:00 hampa Exp $ */
+/* $Id$ */
 
 
 #include "config.h"

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpegdemux.h                                                *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2004-04-08 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2004-10-12 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003-2004 Hampa Hug <hampa@hampa.ch>                   *
  *****************************************************************************/
 
@@ -30,7 +30,8 @@
 #include "config.h"
 
 
-#define PAR_STREAM_EXCLUDE 1
+#define PAR_STREAM_SELECT  0x01
+#define PAR_STREAM_INVALID 0x02
 
 #define PAR_MODE_SCAN  0
 #define PAR_MODE_LIST  1
