@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_scan.c                                                *
  * Created:       2003-02-07 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-08-02 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-09-10 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_scan.c,v 1.8 2003/08/02 11:11:25 hampa Exp $ */
+/* $Id: mpeg_scan.c,v 1.9 2003/09/10 17:05:00 hampa Exp $ */
 
 
 #include "config.h"
@@ -143,6 +143,7 @@ int mpeg_scan (FILE *inp, FILE *out)
   mpeg->mpeg_system_header = &mpeg_scan_system_header;
   mpeg->mpeg_pack = &mpeg_scan_pack;
   mpeg->mpeg_packet = &mpeg_scan_packet;
+  mpeg->mpeg_packet_check = &mpeg_packet_check;
   mpeg->mpeg_end = &mpeg_scan_end;
 
   r = mpegd_parse (mpeg);

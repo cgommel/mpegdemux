@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_parse.c                                               *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-07-28 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-09-10 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.c,v 1.17 2003/07/28 06:13:10 hampa Exp $ */
+/* $Id: mpeg_parse.c,v 1.18 2003/09/10 17:05:00 hampa Exp $ */
 
 
 #include "config.h"
@@ -58,6 +58,7 @@ mpeg_demux_t *mpegd_open_fp (mpeg_demux_t *mpeg, FILE *fp, int close)
   mpeg->mpeg_skip = NULL;
   mpeg->mpeg_system_header = NULL;
   mpeg->mpeg_packet = NULL;
+  mpeg->mpeg_packet_check = NULL;
   mpeg->mpeg_pack = NULL;
   mpeg->mpeg_end = NULL;
 
@@ -480,24 +481,31 @@ int mpegd_parse_packet (mpeg_demux_t *mpeg)
     mpeg->packet.ssid = ssid;
   }
 
-  mpeg->packet_cnt += 1;
-  mpeg->streams[sid].packet_cnt += 1;
-  mpeg->streams[sid].size += mpeg->packet.size - mpeg->packet.offset;
-
-  if (sid == 0xbd) {
-    mpeg->substreams[ssid].packet_cnt += 1;
-    mpeg->substreams[ssid].size += mpeg->packet.size - mpeg->packet.offset;
-  }
-
-  ofs = mpeg->ofs + mpeg->packet.size;
-
-  if (mpeg->mpeg_packet != NULL) {
-    if (mpeg->mpeg_packet (mpeg)) {
+  if ((mpeg->mpeg_packet_check != NULL) && mpeg->mpeg_packet_check (mpeg)) {
+    if (mpegd_skip (mpeg, 1)) {
       return (1);
     }
   }
+  else {
+    mpeg->packet_cnt += 1;
+    mpeg->streams[sid].packet_cnt += 1;
+    mpeg->streams[sid].size += mpeg->packet.size - mpeg->packet.offset;
 
-  mpegd_set_offset (mpeg, ofs);
+    if (sid == 0xbd) {
+      mpeg->substreams[ssid].packet_cnt += 1;
+      mpeg->substreams[ssid].size += mpeg->packet.size - mpeg->packet.offset;
+    }
+
+    ofs = mpeg->ofs + mpeg->packet.size;
+
+    if (mpeg->mpeg_packet != NULL) {
+      if (mpeg->mpeg_packet (mpeg)) {
+        return (1);
+      }
+    }
+
+    mpegd_set_offset (mpeg, ofs);
+  }
 
   return (0);
 }

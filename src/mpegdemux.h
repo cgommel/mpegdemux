@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpegdemux.h                                                *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-06-07 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-09-10 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.h,v 1.12 2003/06/07 18:55:47 hampa Exp $ */
+/* $Id: mpegdemux.h,v 1.13 2003/09/10 17:05:00 hampa Exp $ */
 
 
 #ifndef MPEGDEMUX_H
@@ -40,6 +40,7 @@
 
 extern unsigned char par_stream[256];
 extern unsigned char par_substream[256];
+extern unsigned char par_invalid[256];
 extern int           par_no_shdr;
 extern int           par_no_pack;
 extern int           par_no_packet;
@@ -55,6 +56,7 @@ extern char          *par_demux_name;
 
 char *mpeg_get_name (const char *base, unsigned sid);
 int mpeg_stream_excl (unsigned char sid, unsigned char ssid);
+int mpeg_packet_check (mpeg_demux_t *mpeg);
 void mpeg_print_stats (mpeg_demux_t *mpeg, FILE *fp);
 int mpeg_copy (mpeg_demux_t *mpeg, FILE *fp, unsigned n);
 

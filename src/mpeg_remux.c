@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_remux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-06-07 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-09-10 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_remux.c,v 1.10 2003/06/07 18:55:46 hampa Exp $ */
+/* $Id: mpeg_remux.c,v 1.11 2003/09/10 17:05:00 hampa Exp $ */
 
 
 #include "config.h"
@@ -201,6 +201,7 @@ int mpeg_remux (FILE *inp, FILE *out)
   mpeg->mpeg_system_header = &mpeg_remux_system_header;
   mpeg->mpeg_pack = &mpeg_remux_pack;
   mpeg->mpeg_packet = &mpeg_remux_packet;
+  mpeg->mpeg_packet_check = &mpeg_packet_check;
   mpeg->mpeg_end = &mpeg_remux_end;
 
   mpeg_buf_init (&shdr);

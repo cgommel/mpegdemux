@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_demux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-07-12 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-09-10 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_demux.c,v 1.12 2003/07/12 12:09:09 hampa Exp $ */
+/* $Id: mpeg_demux.c,v 1.13 2003/09/10 17:05:00 hampa Exp $ */
 
 
 #include "config.h"
@@ -243,6 +243,7 @@ int mpeg_demux (FILE *inp, FILE *out)
   mpeg->mpeg_system_header = &mpeg_demux_system_header;
   mpeg->mpeg_pack = &mpeg_demux_pack;
   mpeg->mpeg_packet = &mpeg_demux_packet;
+  mpeg->mpeg_packet_check = &mpeg_packet_check;
   mpeg->mpeg_end = &mpeg_demux_end;
 
   mpeg->ext = out;

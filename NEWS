@@ -1,5 +1,8 @@
 0.1.1
 
+	* Streams can now be declared invalid
+	* Implemented splitting system stream at end codes when remuxing
+
 0.1.0	2003-08-10
 
 	* Bugfixes

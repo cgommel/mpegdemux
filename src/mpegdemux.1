@@ -4,20 +4,20 @@
 mpegdemux \- MPEG1/2 system stream demultiplexer
 
 .SH SYNOPSIS
-.BR mpegdemux " [options] [input [output]]"
+.BI mpegdemux " [options] [input [output]]"
 
-.BR mpegdemux " --help"
+.BI mpegdemux " --help"
 
-.BR mpegdemux " --version"
+.BI mpegdemux " --version"
 
 .SH DESCRIPTION
 
-.B mpegdemux
+.BR mpegdemux (1)
 is an MPEG1/MPEG2 system stream demultiplexer. It can be
 used to list the contents of an MPEG system stream and to extract
 elementary streams.
 
-.B mpegdemux
+.BR mpegdemux (1)
 has four primary modes of operation:
 .TP
 scan
@@ -104,8 +104,19 @@ This option selects private substreams. Whenever Private Stream 1
 .B -s,
 the substreams within that private stream can be selected using
 .B -p.
-The syntax for spec is the same as for
+The syntax for
+.I spec
+is the same as for
 .B -s.
+\
+.TP
+.BI "-i, --invalid " spec
+Select invalid streams. Packets of invalid streams are not recognized
+as packets and their contents are parsed as MPEG system stream data
+rather than being skipped. The syntax for
+.I spec
+is the same as for
+.B -s
 \
 .TP
 .BI "-b, --base-name " name
@@ -123,7 +134,9 @@ to get files video_c0.m1v, video-c1.m1v, ...
 .B -x, --split
 Split the remuxed stream at sequence boundaries. This option is
 only meaningful in remuxing mode. It can not be used together
-with the -e option. The individual sequences are written to
+with the
+.I -e
+option. The individual sequences are written to
 files whose name was set with the -b option.
 \
 .TP
@@ -153,7 +166,7 @@ and therefore is not done by default. Use this option to
 force inclusion of all packs.
 \
 .TP
-.B -i, --no-drop
+.B -D, --no-drop
 Don't drop incomplete packets in demuxing and remuxing mode.
 \
 .TP

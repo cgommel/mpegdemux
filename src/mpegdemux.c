@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpegdemux.c                                                *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-06-07 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-09-10 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.c,v 1.18 2003/06/07 18:55:46 hampa Exp $ */
+/* $Id: mpegdemux.c,v 1.19 2003/09/10 17:05:00 hampa Exp $ */
 
 
 #include "config.h"
@@ -46,6 +46,8 @@ static FILE     *par_out = NULL;
 
 unsigned char   par_stream[256];
 unsigned char   par_substream[256];
+unsigned char   par_invalid[256];
+
 int             par_no_shdr = 0;
 int             par_no_pack = 0;
 int             par_no_packet = 0;
@@ -70,13 +72,14 @@ void prt_help (void)
     "  -d, --demux              Demultiplex streams\n"
     "  -s, --stream id          Select streams [none]\n"
     "  -p, --substream id       Select substreams [none]\n"
+    "  -i, --invalid id         Select invalid streams [none]\n"
     "  -b, --base-name name     Set the base name for demuxed streams\n"
     "  -x, --split              Split sequences while remuxing [no]\n"
     "  -h, --no-system-headers  Don't list system headers\n"
     "  -k, --no-packs           Don't list packs\n"
     "  -t, --no-packets         Don't list packets\n"
     "  -e, --no-end             Don't list end codes [no]\n"
-    "  -i, --no-drop            Don't drop incomplete packets\n"
+    "  -D, --no-drop            Don't drop incomplete packets\n"
     "  -P, --empty-packs        Remux empty packs [no]\n"
     "  -a, --ac3                Assume DVD AC3 headers in private streams\n"
     "  -u, --spu                Assume DVD subtitles in private streams\n",
@@ -273,6 +276,12 @@ int mpeg_stream_excl (unsigned char sid, unsigned char ssid)
   return (0);
 }
 
+/* check if packet is valid. returns 0 if it is. */
+int mpeg_packet_check (mpeg_demux_t *mpeg)
+{
+  return ((par_invalid[mpeg->packet.sid] & PAR_STREAM_EXCLUDE) == 0);
+}
+
 void mpeg_print_stats (mpeg_demux_t *mpeg, FILE *fp)
 {
   unsigned i;
@@ -352,6 +361,7 @@ int main (int argc, char **argv)
   for (i = 0; i < 256; i++) {
     par_stream[i] = PAR_STREAM_EXCLUDE;
     par_substream[i] = PAR_STREAM_EXCLUDE;
+    par_invalid[i] = PAR_STREAM_EXCLUDE;
   }
 
   argi = 1;
@@ -399,6 +409,18 @@ int main (int argc, char **argv)
         return (1);
       }
     }
+    else if (str_isarg2 (argv[argi], "-i", "--invalid")) {
+      argi += 1;
+      if (argi >= argc) {
+        prt_err ("%s: missing invalid stream id\n", argv[0]);
+        return (1);
+      }
+
+      if (str_get_streams (argv[argi], par_invalid)) {
+        prt_err ("%s: bad stream id (%s)\n", argv[0], argv[argi]);
+        return (1);
+      }
+    }
     else if (str_isarg2 (argv[argi], "-b", "--base-name")) {
       argi += 1;
       if (argi >= argc) {
@@ -430,7 +452,7 @@ int main (int argc, char **argv)
     else if (str_isarg2 (argv[argi], "-P", "--empty-packs")) {
       par_empty_pack = 1;
     }
-    else if (str_isarg2 (argv[argi], "-i", "--no-drop")) {
+    else if (str_isarg2 (argv[argi], "-D", "--no-drop")) {
       par_drop = 0;
     }
     else if (str_isarg2 (argv[argi], "-a", "--ac3")) {
