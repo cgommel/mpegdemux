@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_scan.c                                                *
  * Created:       2003-02-07 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2004-04-08 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2004-09-19 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003-2004 Hampa Hug <hampa@hampa.ch>                   *
  *****************************************************************************/
 
@@ -170,8 +170,8 @@ int mpeg_scan (FILE *inp, FILE *out)
   mpeg_demux_t *mpeg;
 
   for (i = 0; i < 256; i++) {
-    pts1[i] = ~0ULL;
-    pts2[i] = ~0ULL;
+    pts1[i] = ~(unsigned long long) 0;
+    pts2[i] = ~(unsigned long long) 0;
   }
 
   mpeg = mpegd_open_fp (NULL, inp, 0);
