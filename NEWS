@@ -1,5 +1,8 @@
 0.0.5
 
+	* Bugfixes
+	* Private substreams can now be demultiplexed into separate files
+
 0.0.4	2003-04-09
 
 	* Bugfixes

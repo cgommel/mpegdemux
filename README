@@ -7,6 +7,9 @@ elementary streams.
 
 Mpegdemux has three primary modes of operation:
 
+- scan. In this mode the MPEG system stream is scanned for elementary
+  streams. The first packet of each elementary stream is reported.
+
 - list. In this mode the contents of an MPEG system stream are listed
   in a textual form. This is useful to get an overview of what's in
   an MPEG file
