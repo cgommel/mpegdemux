@@ -1,5 +1,5 @@
 # Makefile include file
-# $Id: Makefile.inc.in,v 1.1 2003/02/02 20:26:13 hampa Exp $
+# $Id: Makefile.inc.in,v 1.2 2003/02/02 21:19:50 hampa Exp $
 
 #--------------------------------------------------------------------------
 # user editable section
@@ -9,6 +9,7 @@ exec_prefix	= @exec_prefix@
 bindir		= @bindir@
 libdir		= @libdir@
 incdir		= @includedir@
+mandir		= @mandir@
 
 
 # Executables
