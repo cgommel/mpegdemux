@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_demux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-07 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-04-08 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_demux.c,v 1.8 2003/03/07 08:16:10 hampa Exp $ */
+/* $Id: mpeg_demux.c,v 1.9 2003/04/08 19:01:58 hampa Exp $ */
 
 
 #include "config.h"
@@ -30,12 +30,15 @@
 #include <stdarg.h>
 
 #include "message.h"
+#include "buffer.h"
 #include "mpeg_parse.h"
 #include "mpeg_demux.h"
 #include "mpegdemux.h"
 
 
 static FILE *fp[256];
+
+static mpeg_buffer_t packet = { NULL, 0, 0 };
 
 
 static
@@ -78,32 +81,6 @@ char *mpeg_demux_get_name (const char *base, unsigned sid)
   }
 
   return (ret);
-}
-
-static
-int mpeg_demux_copy (mpeg_demux_t *mpeg, FILE *fp, unsigned n)
-{
-  unsigned char buf[4096];
-  unsigned      i;
-
-  while (n > 0) {
-    if (n > 4096) {
-      i = 4096;
-    }
-    else {
-      i = n;
-    }
-
-    if (mpegd_read (mpeg, buf, i)) {
-      return (1);
-    }
-
-    fwrite (buf, 1, i, fp);
-
-    n -= i;
-  }
-
-  return (0);
 }
 
 static
@@ -162,7 +139,7 @@ int mpeg_demux_copy_spu (mpeg_demux_t *mpeg, FILE *fp, unsigned cnt)
 
     n = (cnt < spucnt) ? cnt : spucnt;
 
-    mpeg_demux_copy (mpeg, fp, n);
+    mpeg_copy (mpeg, fp, n);
     cnt -= n;
     spucnt -= n;
   }
@@ -228,10 +205,26 @@ int mpeg_demux_packet (mpeg_demux_t *mpeg)
   cnt = mpeg->packet.size - cnt;
 
   if ((sid == 0xbd) && par_dvdsub) {
-    r = mpeg_demux_copy_spu (mpeg, fp[sid], cnt);
+    return (mpeg_demux_copy_spu (mpeg, fp[sid], cnt));
   }
-  else {
-    r = mpeg_demux_copy (mpeg, fp[sid], cnt);
+
+  r = 0;
+
+  if (mpeg_buf_read (&packet, mpeg, cnt)) {
+    prt_msg ("demux: incomplete packet (sid=%02x size=%u/%u)\n",
+      sid, packet.cnt, cnt
+    );
+
+    if (par_drop) {
+      mpeg_buf_clear (&packet);
+      return (1);
+    }
+
+    r = 1;
+  }
+
+  if (mpeg_buf_write_clear (&packet, fp[sid])) {
+    r = 1;
   }
 
   return (r);

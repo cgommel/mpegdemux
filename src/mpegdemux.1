@@ -1,4 +1,4 @@
-.TH MPEGDEMUX 1 "2003-03-06" "mpegdemux" "HH"
+.TH MPEGDEMUX 1 "2003-04-08" "mpegdemux" "HH"
 
 .SH NAME
 mpegdemux \- MPEG1/2 system stream demultiplexer
@@ -41,39 +41,45 @@ structure is left intact. This means that the output is again
 an MPEG system stream with all but the selected elementary
 streams removed.
 
-.SS OPTIONS
+.SH OPTIONS
 
 .TP
-.I --help
+.B --help
 Print usage information
+\
 .TP
-.I --version
+.B --version
 Print version information
+\
 .TP
-.I -c --scan
+.B -c --scan
 Scan a system stream for elementary streams. This is the default
 mode. All streams and substreams are automatically selected when
 using this option.
+\
 .TP
-.I -l, --list
+.B -l, --list
 List the system headers, packs and packets in an MPEG system stream.
+\
 .TP
-.I -d, --demux
+.B -d, --demux
 Demultiplex an MPEG system stream. The demultiplexed streams are
 written to the output file unless the
-.I --base-name
+.B --base-name
 option is used. If the
-.I --base-name
+.B --base-name
 option is not used, only one stream can be demultiplexed (if more
 streams are specified, they will be randomly interleaved in the
 output file).
+\
 .TP
-.I -r, --remux
+.B -r, --remux
 Remultiplex an MPEG system stream. The output MPEG system stream
 is written to the output file. Many options control what is
 copied from the input to the output and what is discarded.
+\
 .TP
-.I -s, --streams spec
+.BI "-s, --streams " spec
 This option selects streams.
 .I
 spec
@@ -90,17 +96,19 @@ A - in front of an ID range means exclusion. For example the spec
 -s 0xc0-0xcf/-0xc2
 
 select all video streams (0xc0 - 0xcf) except stream 0xc2.
+\
 .TP
-.I -p, --substream spec
+.BI "-p, --substream " spec
 This option selects private substreams. Whenever Private Stream 1
 (0xbd) is selected using
-.I -s,
+.B -s,
 the substreams within that private stream can be selected using
-.I -p.
+.B -p.
 The syntax for spec is the same as for
-.I -s.
+.B -s.
+\
 .TP
-.I -b, --base-name name
+.BI "-b, --base-name " name
 When demultiplexing more than one stream, the output file names
 can be set using this option. To generate the output file name
 for a stream, every # character in name is replaced by
@@ -110,35 +118,46 @@ video streams in one go, use something like
 $ mpegdemux -d -b video_##.m1v -s 0xc0-0xcf src.mpg
 
 to get files video_c0.m1v, video-c1.m1v, ...
+\
 .TP
-.I -h, --no-system-headers
+.B -h, --no-system-headers
 Don't print system headers in listing mode. Additionally, in
 remuxing mode, don't repeat system headers.
+\
 .TP
-.I -k, --no-packs
+.B -k, --no-packs
 Don't print packs in listing mode.
+\
 .TP
-.I -t, --no-packets
+.B -t, --no-packets
 Don't print packets in listing mode.
+\
 .TP
-.I -e, --no-end
+.B -e, --no-end
 Don't print end codes in listing mode. Additionally, in
 remuxing mode, make sure that there is exactly one end
 code at the end of the stream.
+\
 .TP
-.I -P, --empty-packs
+.B -P, --empty-packs
 When streams are removed during remuxing, packs can become
 empty. Including these empty packs in the output is pointless
 and therefore is not done by default. Use this option to
 force inclusion of all packs.
+\
 .TP
-.I -a, --ac3
+.B -i, --no-drop
+Don't drop incomplete packets in demuxing and remuxing mode.
+\
+.TP
+.B -a, --ac3
 AC3 sound packets in DVD MPEG2 streams have a 3 byte header
 that is neither part of the MPEG specification nor of the
 AC3 specification. When this option is used, these 3 bytes
 are removed to produce a correct AC3 stream.
+\
 .TP
-.I -u, --spu
+.B -u, --spu
 This option is used to extract DVD subtitles. It is necessary
 because the subtitle streams on DVD don't contain all the
 timing information (the time stamps in the packet headers
@@ -156,8 +175,9 @@ PTS (8 bytes)
 SPU packet
 
 and so on
+\
 .TP
-.I -v, --verbose
+.B -v, --verbose
 Be verbose. If this option is used some stream statistics will
 be printed in scan and list modes.
 

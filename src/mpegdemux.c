@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpegdemux.c                                                *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-08 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-04-08 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.c,v 1.15 2003/03/08 08:43:40 hampa Exp $ */
+/* $Id: mpegdemux.c,v 1.16 2003/04/08 19:01:58 hampa Exp $ */
 
 
 #include "config.h"
@@ -51,6 +51,7 @@ int             par_no_pack = 0;
 int             par_no_packet = 0;
 int             par_no_end = 0;
 int             par_empty_pack = 0;
+int             par_drop = 1;
 int             par_scan = 0;
 int             par_dvdac3 = 0;
 int             par_dvdsub = 0;
@@ -73,6 +74,7 @@ void prt_help (void)
     "  -k, --no-packs           Don't list packs\n"
     "  -t, --no-packets         Don't list packets\n"
     "  -e, --no-end             Don't list end codes [no]\n"
+    "  -i, --no-drop            Don't drop incomplete packets\n"
     "  -P, --empty-packs        Remux empty packs [no]\n"
     "  -a, --ac3                Assume DVD AC3 headers in private streams\n"
     "  -u, --spu                Assume DVD subtitles in private streams\n",
@@ -259,6 +261,32 @@ void mpeg_print_stats (mpeg_demux_t *mpeg, FILE *fp)
   fflush (fp);
 }
 
+int mpeg_copy (mpeg_demux_t *mpeg, FILE *fp, unsigned n)
+{
+  unsigned char buf[4096];
+  unsigned      i, j;
+
+  while (n > 0) {
+    i = (n < 4096) ? n : 4096;
+
+    j = mpegd_read (mpeg, buf, i);
+
+    if (j > 0) {
+      if (fwrite (buf, 1, j, fp) != j) {
+        return (1);
+      }
+    }
+
+    if (i != j) {
+      return (1);
+    }
+
+    n -= i;
+  }
+
+  return (0);
+}
+
 int main (int argc, char **argv)
 {
   int      argi;
@@ -353,6 +381,9 @@ int main (int argc, char **argv)
     }
     else if (str_isarg2 (argv[argi], "-P", "--empty-packs")) {
       par_empty_pack = 1;
+    }
+    else if (str_isarg2 (argv[argi], "-i", "--no-drop")) {
+      par_drop = 0;
     }
     else if (str_isarg2 (argv[argi], "-a", "--ac3")) {
       par_dvdac3 = 1;

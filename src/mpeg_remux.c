@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_remux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-08 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-04-08 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_remux.c,v 1.8 2003/03/08 08:19:35 hampa Exp $ */
+/* $Id: mpeg_remux.c,v 1.9 2003/04/08 19:01:58 hampa Exp $ */
 
 
 #include "config.h"
@@ -28,62 +28,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 
 #include "message.h"
+#include "buffer.h"
 #include "mpeg_parse.h"
 #include "mpeg_remux.h"
 #include "mpegdemux.h"
 
 
-#define PACK_BUF_SIZE 16384
+#define mpeg_ext_fp(mpeg) ((FILE *)(mpeg)->ext)
 
 
-static unsigned char pack_buf[PACK_BUF_SIZE];
-static unsigned      pack_cnt = 0;
+static mpeg_buffer_t shdr = { NULL, 0, 0 };
+static mpeg_buffer_t pack = { NULL, 0, 0 };
+static mpeg_buffer_t packet = { NULL, 0, 0 };
 
-
-static
-int mpeg_remux_copy (mpeg_demux_t *mpeg, unsigned n)
-{
-  unsigned char buf[4096];
-  FILE          *fp;
-  unsigned      i;
-
-  fp = (FILE *) mpeg->ext;
-
-  while (n > 0) {
-    if (n > 4096) {
-      i = 4096;
-    }
-    else {
-      i = n;
-    }
-
-    if (mpegd_read (mpeg, buf, i)) {
-      return (1);
-    }
-
-    fwrite (buf, 1, i, fp);
-
-    n -= i;
-  }
-
-  return (0);
-}
-
-static
-int mpeg_remux_pack_write (mpeg_demux_t *mpeg)
-{
-  FILE *fp;
-
-  if (pack_cnt > 0) {
-    fp = (FILE *) mpeg->ext;
-    fwrite (pack_buf, 1, pack_cnt, fp);
-    pack_cnt = 0;
-  }
-
-  return (0);
-}
 
 static
 int mpeg_remux_system_header (mpeg_demux_t *mpeg)
@@ -92,16 +52,25 @@ int mpeg_remux_system_header (mpeg_demux_t *mpeg)
     return (0);
   }
 
-  if (mpeg_remux_pack_write (mpeg)) {
+  if (mpeg_buf_write_clear (&pack, mpeg_ext_fp (mpeg))) {
     return (1);
   }
 
-  return (mpeg_remux_copy (mpeg, mpeg->shdr.size));
+  if (mpeg_buf_read (&shdr, mpeg, mpeg->shdr.size)) {
+    return (1);
+  }
+
+  if (mpeg_buf_write_clear (&shdr, mpeg_ext_fp (mpeg))) {
+    return (1);
+  }
+
+  return (0);
 }
 
 static
 int mpeg_remux_packet (mpeg_demux_t *mpeg)
 {
+  int      r;
   unsigned sid, ssid;
 
   sid = mpeg->packet.sid;
@@ -111,37 +80,46 @@ int mpeg_remux_packet (mpeg_demux_t *mpeg)
     return (0);
   }
 
-  if (mpeg_remux_pack_write (mpeg)) {
+  r = 0;
+
+  if (mpeg_buf_read (&packet, mpeg, mpeg->packet.size)) {
+    prt_msg ("remux: incomplete packet (sid=%02x size=%u/%u)\n",
+      sid, packet.cnt, mpeg->packet.size
+    );
+
+    if (par_drop) {
+      mpeg_buf_clear (&packet);
+      return (1);
+    }
+
+    r = 1;
+  }
+
+  if (mpeg_buf_write_clear (&pack, mpeg_ext_fp (mpeg))) {
     return (1);
   }
 
-  return (mpeg_remux_copy (mpeg, mpeg->packet.size));
+  if (mpeg_buf_write_clear (&packet, mpeg_ext_fp (mpeg))) {
+    return (1);
+  }
+
+  return (r);
 }
 
 static
 int mpeg_remux_pack (mpeg_demux_t *mpeg)
 {
-  int r;
+  if (mpeg_buf_read (&pack, mpeg, mpeg->pack.size)) {
+    return (1);
+  }
 
-  /*
-    If we don't allow empty packs then copy the pack to the buffer,
-    possibly overwriting an old (empty) pack. Otherwise copy the
-    pack immediately to the output.
-  */
-
-  if (!par_empty_pack) {
-    if (mpeg->pack.size > PACK_BUF_SIZE) {
+  if (par_empty_pack) {
+    if (mpeg_buf_write_clear (&pack, mpeg_ext_fp (mpeg))) {
       return (1);
     }
-
-    pack_cnt = mpeg->pack.size;
-    r = mpegd_read (mpeg, pack_buf, pack_cnt);
-  }
-  else {
-    r = mpeg_remux_copy (mpeg, mpeg->pack.size);
   }
 
-  return (r);
+  return (0);
 }
 
 static
@@ -151,7 +129,11 @@ int mpeg_remux_end (mpeg_demux_t *mpeg)
     return (0);
   }
 
-  return (mpeg_remux_copy (mpeg, 4));
+  if (mpeg_copy (mpeg, (FILE *) mpeg->ext, 4)) {
+    return (1);
+  }
+
+  return (0);
 }
 
 int mpeg_remux (FILE *inp, FILE *out)
@@ -171,6 +153,10 @@ int mpeg_remux (FILE *inp, FILE *out)
   mpeg->mpeg_packet = &mpeg_remux_packet;
   mpeg->mpeg_end = &mpeg_remux_end;
 
+  mpeg_buf_init (&shdr);
+  mpeg_buf_init (&pack);
+  mpeg_buf_init (&packet);
+
   r = mpegd_parse (mpeg);
 
   if (par_no_end) {
@@ -185,6 +171,10 @@ int mpeg_remux (FILE *inp, FILE *out)
   }
 
   mpegd_close (mpeg);
+
+  mpeg_buf_free (&shdr);
+  mpeg_buf_free (&pack);
+  mpeg_buf_free (&packet);
 
   return (r);
 }

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     message.c                                                  *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-02 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-04-08 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: message.c,v 1.2 2003/03/02 11:19:49 hampa Exp $ */
+/* $Id: message.c,v 1.3 2003/04/08 19:01:57 hampa Exp $ */
 
 
 #include "config.h"
@@ -53,7 +53,7 @@ void prt_msg_va (unsigned level, const char *msg, va_list va)
   }
 }
 
-void prt_msg (unsigned level, const char *msg, ...)
+void prt_message (unsigned level, const char *msg, ...)
 {
   va_list va;
 
@@ -71,6 +71,28 @@ void prt_err (const char *msg, ...)
   if (MSG_ERR <= msg_level) {
     va_start (va, msg);
     prt_msg_va (MSG_ERR, msg, va);
+    va_end (va);
+  }
+}
+
+void prt_msg (const char *msg, ...)
+{
+  va_list va;
+
+  if (MSG_MSG <= msg_level) {
+    va_start (va, msg);
+    prt_msg_va (MSG_MSG, msg, va);
+    va_end (va);
+  }
+}
+
+void prt_deb (const char *msg, ...)
+{
+  va_list va;
+
+  if (MSG_DEBUG <= msg_level) {
+    va_start (va, msg);
+    prt_msg_va (MSG_DEBUG, msg, va);
     va_end (va);
   }
 }

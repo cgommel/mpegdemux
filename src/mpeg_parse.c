@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_parse.c                                               *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-04-03 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-04-08 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,12 +20,13 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.c,v 1.13 2003/04/03 18:09:54 hampa Exp $ */
+/* $Id: mpeg_parse.c,v 1.14 2003/04/08 19:01:58 hampa Exp $ */
 
 
 #include "config.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "message.h"
 #include "mpeg_parse.h"
@@ -234,41 +235,34 @@ int mpegd_skip (mpeg_demux_t *mpeg, unsigned n)
   return (0);
 }
 
-int mpegd_read (mpeg_demux_t *mpeg, void *buf, unsigned n)
+unsigned mpegd_read (mpeg_demux_t *mpeg, void *buf, unsigned n)
 {
-  unsigned      i, j;
+  unsigned      ret;
+  unsigned      i;
   unsigned char *tmp;
-  size_t        r;
-
-  mpeg->ofs += n;
 
   tmp = (unsigned char *) buf;
 
-  if (n <= mpeg->buf_n) {
-    j = n;
-  }
-  else {
-    j = mpeg->buf_n;
-  }
+  i = (n < mpeg->buf_n) ? n : mpeg->buf_n;
 
-  if (j > 0) {
-    for (i = 0; i < j; i++) {
-      tmp[i] = mpeg->buf[mpeg->buf_i + i];
-    }
+  ret = i;
 
-    mpeg->buf_i += j;
-    mpeg->buf_n -= j;
-    n -= j;
+  if (i > 0) {
+    memcpy (tmp, &mpeg->buf[mpeg->buf_i], i);
+
+    tmp += i;
+    mpeg->buf_i += i;
+    mpeg->buf_n -= i;
+    n -= i;
   }
 
   if (n > 0) {
-    r = fread (tmp + j, 1, n , mpeg->fp);
-    if (r != n) {
-      return (1);
-    }
+    ret += fread (tmp, 1, n, mpeg->fp);
   }
 
-  return (0);
+  mpeg->ofs += ret;
+
+  return (ret);
 }
 
 int mpegd_set_offset (mpeg_demux_t *mpeg, unsigned long long ofs)

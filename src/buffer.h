@@ -3,8 +3,8 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * File name:     message.h                                                  *
- * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
+ * File name:     buffer.h                                                   *
+ * Created:       2003-04-08 by Hampa Hug <hampa@hampa.ch>                   *
  * Last modified: 2003-04-08 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
@@ -20,30 +20,33 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: message.h,v 1.3 2003/04/08 19:01:58 hampa Exp $ */
+/* $Id: buffer.h,v 1.1 2003/04/08 19:01:57 hampa Exp $ */
 
 
-#ifndef MPEGDEMUX_MESSAGE_H
-#define MPEGDEMUX_MESSAGE_H 1
+#ifndef MPEGDEMUX_BUFFER_H
+#define MPEGDEMUX_BUFFER_H 1
 
 
 #include "config.h"
+#include "mpeg_parse.h"
 
 
-#define MSG_ERR   0
-#define MSG_MSG   1
-#define MSG_INFO  2
-#define MSG_DEBUG 3
+typedef struct {
+  unsigned char *buf;
+  unsigned      cnt;
+  unsigned      max;
+} mpeg_buffer_t;
 
 
-void msg_set_level (unsigned level);
-unsigned msg_get_level (void);
 
-void prt_message (unsigned level, const char *msg, ...);
-
-void prt_err (const char *msg, ...);
-void prt_msg (const char *msg, ...);
-void prt_deb (const char *msg, ...);
+void mpeg_buf_init (mpeg_buffer_t *buf);
+void mpeg_buf_free (mpeg_buffer_t *buf);
+void mpeg_buf_clear (mpeg_buffer_t *buf);
+int mpeg_buf_set_max (mpeg_buffer_t *buf, unsigned max);
+int mpeg_buf_set_cnt (mpeg_buffer_t *buf, unsigned cnt);
+int mpeg_buf_read (mpeg_buffer_t *buf, mpeg_demux_t *mpeg, unsigned cnt);
+int mpeg_buf_write (mpeg_buffer_t *buf, FILE *fp);
+int mpeg_buf_write_clear (mpeg_buffer_t *buf, FILE *fp);
 
 
 #endif
