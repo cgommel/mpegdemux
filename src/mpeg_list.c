@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_list.c                                                *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-02-03 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_list.c,v 1.2 2003/02/02 21:14:49 hampa Exp $ */
+/* $Id: mpeg_list.c,v 1.3 2003/02/03 16:16:31 hampa Exp $ */
 
 
 #include <stdio.h>
@@ -96,6 +96,8 @@ int mpeg_list_pack (mpeg_demux_t *mpeg)
     mpeg->pack_mux_rate, 50.0 * mpeg->pack_mux_rate
   );
 
+  fflush (fp);
+
   return (0);
 }
 
@@ -135,10 +137,11 @@ int mpeg_list (FILE *inp, FILE *out)
 
   fprintf (out,
     "\n"
-    "Packs:          %lu\n"
     "System headers: %lu\n"
-    "Packets:        %lu\n",
-    mpeg->pack_cnt, mpeg->shdr_cnt, mpeg->packet_cnt
+    "Packs:          %lu\n"
+    "Packets:        %lu\n"
+    "Skipped:        %lu bytes\n",
+    mpeg->shdr_cnt, mpeg->pack_cnt, mpeg->packet_cnt, mpeg->skip_cnt
   );
 
   for (i = 0; i < 256; i++) {

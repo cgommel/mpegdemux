@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.h,v 1.2 2003/02/02 21:14:49 hampa Exp $ */
+/* $Id: mpeg_parse.h,v 1.3 2003/02/03 16:16:31 hampa Exp $ */
 
 
 #ifndef MPEG_PARSE_H
@@ -70,6 +70,7 @@ typedef struct mpeg_demux_t {
   unsigned long      shdr_cnt;
   unsigned long      pack_cnt;
   unsigned long      packet_cnt;
+  unsigned long      skip_cnt;
   mpeg_stream_info_t streams[256];
 
   void               *ext;

@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.c,v 1.2 2003/02/02 21:14:49 hampa Exp $ */
+/* $Id: mpeg_parse.c,v 1.3 2003/02/03 16:16:31 hampa Exp $ */
 
 
 #include <stdlib.h>
@@ -95,6 +95,7 @@ void mpegd_reset_stats (mpeg_demux_t *mpeg)
   mpeg->shdr_cnt = 0;
   mpeg->pack_cnt = 0;
   mpeg->packet_cnt = 0;
+  mpeg->skip_cnt = 0;
 
   for (i = 0; i < 256; i++) {
     mpeg->streams[i].packet_cnt = 0;
@@ -261,6 +262,8 @@ static
 int mpegd_seek_header (mpeg_demux_t *mpeg, int force)
 {
   while (mpegd_get_bits (mpeg, 0, 24) == 0) {
+    mpeg->skip_cnt += 1;
+
     if (mpeg->mpeg_skip != NULL) {
       if (mpeg->mpeg_skip (mpeg)) {
         return (1);
@@ -274,6 +277,8 @@ int mpegd_seek_header (mpeg_demux_t *mpeg, int force)
 
   if (force) {
     while (mpegd_get_bits (mpeg, 0, 24) != 1) {
+      mpeg->skip_cnt += 1;
+
       if (mpeg->mpeg_skip != NULL) {
         if (mpeg->mpeg_skip (mpeg)) {
           return (1);
