@@ -20,7 +20,7 @@
 #* Public License for more details.                                          *
 #*****************************************************************************
 
-# $Id: configure.in,v 1.11 2003/08/10 21:35:13 hampa Exp $
+# $Id: configure.in,v 1.12 2003/08/10 21:56:33 hampa Exp $
 
 AC_PREREQ(2.50)
 
@@ -32,7 +32,7 @@ dnl -----------------------------------------------------------------------
 
 MPEGDEMUX_VERSION_MAJ=0
 MPEGDEMUX_VERSION_MIN=1
-MPEGDEMUX_VERSION_MIC=0
+MPEGDEMUX_VERSION_MIC=1
 MPEGDEMUX_VERSION_STR="$MPEGDEMUX_VERSION_MAJ.$MPEGDEMUX_VERSION_MIN.$MPEGDEMUX_VERSION_MIC"
 AC_SUBST(MPEGDEMUX_VERSION_MAJ)
 AC_SUBST(MPEGDEMUX_VERSION_MIN)
