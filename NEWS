@@ -1,9 +1,13 @@
-0.1.1	2004-09-19
+0.1.2	2004-09-19
 
 	* Streams can now be declared invalid
 	* Implemented splitting system stream at end codes when remuxing
 	* Made the transition from CVS to SVN
 	* Bugfixes
+
+0.1.1	2003-08-10	r61
+
+	* Dummy release
 
 0.1.0	2003-08-10	r60
 
