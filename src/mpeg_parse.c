@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_parse.c                                               *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-02-04 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-02-05 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.c,v 1.7 2003/02/04 22:16:16 hampa Exp $ */
+/* $Id: mpeg_parse.c,v 1.8 2003/02/05 02:48:08 hampa Exp $ */
 
 
 #include <stdlib.h>
@@ -214,13 +214,6 @@ int mpegd_skip (mpeg_demux_t *mpeg, unsigned n)
   return (0);
 }
 
-void mpegd_set_offset (mpeg_demux_t *mpeg, unsigned long long ofs)
-{
-  if (ofs > mpeg->ofs) {
-    mpegd_skip (mpeg, (unsigned long) (ofs - mpeg->ofs));
-  }
-}
-
 int mpegd_read (mpeg_demux_t *mpeg, void *buf, unsigned n)
 {
   unsigned      i, j;
@@ -258,10 +251,23 @@ int mpegd_read (mpeg_demux_t *mpeg, void *buf, unsigned n)
   return (0);
 }
 
-static
-int mpegd_seek_header (mpeg_demux_t *mpeg, int force)
+int mpegd_set_offset (mpeg_demux_t *mpeg, unsigned long long ofs)
 {
-  while (mpegd_get_bits (mpeg, 0, 24) == 0) {
+  if (ogs == mpeg->ofs) {
+    return (0);
+  }
+
+  if (ofs > mpeg->ofs) {
+    return (mpegd_skip (mpeg, (unsigned long) (ofs - mpeg->ofs)));
+  }
+
+  return (1);
+}
+
+static
+int mpegd_seek_header (mpeg_demux_t *mpeg)
+{
+  while (mpegd_get_bits (mpeg, 0, 24) != 1) {
     mpeg->skip_cnt += 1;
 
     if (mpeg->mpeg_skip != NULL) {
@@ -272,22 +278,6 @@ int mpegd_seek_header (mpeg_demux_t *mpeg, int force)
 
     if (mpegd_skip (mpeg, 1)) {
       return (1);
-    }
-  }
-
-  if (force) {
-    while (mpegd_get_bits (mpeg, 0, 24) != 1) {
-      mpeg->skip_cnt += 1;
-
-      if (mpeg->mpeg_skip != NULL) {
-        if (mpeg->mpeg_skip (mpeg)) {
-          return (1);
-        }
-      }
-
-      if (mpegd_skip (mpeg, 1)) {
-        return (1);
-      }
     }
   }
 
@@ -460,15 +450,15 @@ int mpegd_parse_pack (mpeg_demux_t *mpeg)
 
   mpegd_set_offset (mpeg, ofs);
 
-  mpegd_seek_header (mpeg, 1);
+  mpegd_seek_header (mpeg);
 
   if (mpegd_get_bits (mpeg, 0, 32) == MPEG_SYSTEM_HEADER) {
     if (mpegd_parse_system_header (mpeg)) {
       return (1);
     }
-  }
 
-  mpegd_seek_header (mpeg, 1);
+    mpegd_seek_header (mpeg);
+  }
 
   while (mpegd_get_bits (mpeg, 0, 24) == MPEG_PACKET_START) {
     sid = mpegd_get_bits (mpeg, 24, 8);
@@ -480,7 +470,7 @@ int mpegd_parse_pack (mpeg_demux_t *mpeg)
       mpegd_parse_packet (mpeg);
     }
 
-    mpegd_seek_header (mpeg, 1);
+    mpegd_seek_header (mpeg);
   }
 
   return (0);
@@ -490,13 +480,14 @@ int mpegd_parse (mpeg_demux_t *mpeg)
 {
   unsigned long long ofs;
 
-  mpegd_seek_header (mpeg, 1);
+  mpegd_seek_header (mpeg);
+
   while (mpegd_get_bits (mpeg, 0, 32) == MPEG_PACK_START) {
     if (mpegd_parse_pack (mpeg)) {
       return (1);
     }
 
-    if (mpegd_seek_header (mpeg, 1)) {
+    if (mpegd_seek_header (mpeg)) {
       return (1);
     }
   }

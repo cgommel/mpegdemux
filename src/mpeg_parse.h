@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_parse.h                                               *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-02-04 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-02-05 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.h,v 1.6 2003/02/04 22:16:17 hampa Exp $ */
+/* $Id: mpeg_parse.h,v 1.7 2003/02/05 02:48:08 hampa Exp $ */
 
 
 #ifndef MPEG_PARSE_H
@@ -105,6 +105,7 @@ void mpegd_reset_stats (mpeg_demux_t *mpeg);
 unsigned long mpegd_get_bits (mpeg_demux_t *mpeg, unsigned i, unsigned n);
 int mpegd_skip (mpeg_demux_t *mpeg, unsigned n);
 int mpegd_read (mpeg_demux_t *mpeg, void *buf, unsigned n);
+int mpegd_set_offset (mpeg_demux_t *mpeg, unsigned long long ofs);
 int mpegd_parse (mpeg_demux_t *mpeg);
 
 
