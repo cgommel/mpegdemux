@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_demux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-02-04 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_demux.c,v 1.1 2003/02/02 20:26:13 hampa Exp $ */
+/* $Id: mpeg_demux.c,v 1.2 2003/02/04 03:25:19 hampa Exp $ */
 
 
 #include <stdio.h>
@@ -114,6 +114,7 @@ static
 int mpeg_demux_packet (mpeg_demux_t *mpeg)
 {
   unsigned id;
+  unsigned cnt;
   int      r;
 
   id = mpeg->packet_stm_id;
@@ -140,7 +141,21 @@ int mpeg_demux_packet (mpeg_demux_t *mpeg)
     mpegd_skip (mpeg, mpeg->packet_offset);
   }
 
-  r = mpeg_demux_copy (mpeg, fp[id], mpeg->packet_size + 6 - mpeg->packet_offset);
+  cnt = (mpeg->packet_size + 6) - mpeg->packet_offset;
+
+  /* select substream in private stream 1 (AC3 audio) */
+  if ((id == 0xbd) && (par_substream < 256)) {
+    if (mpegd_get_bits (mpeg, 0, 8) != par_substream) {
+      return (0);
+    }
+
+    /* skip DVD specific frame header */
+    mpegd_skip (mpeg, 4);
+
+    cnt -= 4;
+  }
+
+  r = mpeg_demux_copy (mpeg, fp[id], cnt);
 
   return (r);
 }

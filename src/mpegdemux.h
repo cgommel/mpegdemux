@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpegdemux.h                                                *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-02-04 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.h,v 1.1 2003/02/02 20:26:13 hampa Exp $ */
+/* $Id: mpegdemux.h,v 1.2 2003/02/04 03:25:19 hampa Exp $ */
 
 
 #ifndef MPEGDEMUX_H
@@ -35,6 +35,7 @@ extern unsigned char par_stream[256];
 extern unsigned char par_rep_sh;
 extern unsigned char par_list_first;
 extern char          *par_demux_name;
+extern unsigned      par_substream;
 
 
 #endif

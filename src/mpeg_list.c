@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_list.c                                                *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-02-03 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-02-04 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_list.c,v 1.4 2003/02/03 20:58:33 hampa Exp $ */
+/* $Id: mpeg_list.c,v 1.5 2003/02/04 03:25:19 hampa Exp $ */
 
 
 #include <stdio.h>
@@ -57,6 +57,7 @@ int mpeg_list_packet (mpeg_demux_t *mpeg)
 {
   FILE     *fp;
   unsigned id;
+  unsigned substream;
 
   id = mpeg->packet_stm_id;
 
@@ -68,13 +69,21 @@ int mpeg_list_packet (mpeg_demux_t *mpeg)
     return (0);
   }
 
+  if (id == 0xbd) {
+    substream = mpegd_get_bits (mpeg, 8 * mpeg->packet_offset, 8);
+  }
+  else {
+    substream = 0;
+  }
+
   fp = (FILE *) mpeg->ext;
 
-  fprintf (fp, "%08llx: packet[%lu]: stream id=%02x size=%u type=%u pts=%llu[%.4f]\n",
+  fprintf (fp, "%08llx: packet[%lu]: stream id=%02x size=%u type=%u pts=%llu[%.4f] sub=%02x\n",
     mpeg->ofs, mpeg->streams[id].packet_cnt - 1,
     mpeg->packet_stm_id, mpeg->packet_size,
     mpeg->packet_type,
-    mpeg->packet_pts, (double) mpeg->packet_pts / 90000.0
+    mpeg->packet_pts, (double) mpeg->packet_pts / 90000.0,
+    substream
   );
 
   return (0);
@@ -91,10 +100,12 @@ int mpeg_list_pack (mpeg_demux_t *mpeg)
 
   fp = (FILE *) mpeg->ext;
 
-  fprintf (fp, "%08llx: pack[%lu]: scr=%llu[%.4fs] mux=%lu[%.2f bytes/s]\n",
+  fprintf (fp, "%08llx: pack[%lu]: type=%u scr=%llu[%.4f] mux=%lu[%.2f] stuff=%u\n",
     mpeg->ofs, mpeg->pack_cnt - 1,
+    mpeg->pack_type,
     mpeg->pack_scr, (double) mpeg->pack_scr / 90000.0,
-    mpeg->pack_mux_rate, 50.0 * mpeg->pack_mux_rate
+    mpeg->pack_mux_rate, 50.0 * mpeg->pack_mux_rate,
+    mpeg->pack_stuff
   );
 
   fflush (fp);

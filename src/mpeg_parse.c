@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.c,v 1.5 2003/02/04 02:48:25 hampa Exp $ */
+/* $Id: mpeg_parse.c,v 1.6 2003/02/04 03:25:19 hampa Exp $ */
 
 
 #include <stdlib.h>
@@ -424,11 +424,11 @@ int mpegd_parse_pack (mpeg_demux_t *mpeg)
 
     mpeg->pack_mux_rate = mpegd_get_bits (mpeg, 73, 22);
 
+    mpeg->pack_stuff = 0;
+
     ofs = mpeg->ofs + 12;
   }
   else if (mpegd_get_bits (mpeg, 32, 2) == 0x01) {
-    unsigned stuff;
-
     mpeg->pack_type = 2;
     mpeg->pack_scr = mpegd_get_bits (mpeg, 34, 3);
     mpeg->pack_scr = (mpeg->pack_scr << 15) | mpegd_get_bits (mpeg, 38, 15);
@@ -436,9 +436,9 @@ int mpegd_parse_pack (mpeg_demux_t *mpeg)
 
     mpeg->pack_mux_rate = mpegd_get_bits (mpeg, 80, 22);
 
-    stuff = mpegd_get_bits (mpeg, 109, 3);
+    mpeg->pack_stuff = mpegd_get_bits (mpeg, 109, 3);
 
-    ofs = mpeg->ofs + 14 + stuff;
+    ofs = mpeg->ofs + 14 + mpeg->pack_stuff;
   }
   else {
     mpeg->pack_type = 0;
