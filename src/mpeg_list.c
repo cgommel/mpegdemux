@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_list.c                                                *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-07-27 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-08-02 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_list.c,v 1.13 2003/07/28 06:12:20 hampa Exp $ */
+/* $Id: mpeg_list.c,v 1.14 2003/08/02 11:11:25 hampa Exp $ */
 
 
 #include "config.h"
@@ -87,7 +87,6 @@ int mpeg_list_packet (mpeg_demux_t *mpeg)
 {
   FILE     *fp;
   unsigned sid, ssid;
-  char     *type;
 
   if (par_no_packet) {
     return (0);
@@ -104,23 +103,31 @@ int mpeg_list_packet (mpeg_demux_t *mpeg)
 
   mpeg_list_print_skip (fp);
 
-  if (mpeg->packet.type == 1) {
-    type = "MPEG1";
-  }
-  else if (mpeg->packet.type == 2) {
-    type = "MPEG2";
-  }
-  else {
-    type = "UNKWN";
-  }
-
   fprintf (fp,
-    "%08llx: packet[%lu]: %s sid=%02x ssid=%02x size=%u",
+    "%08llx: packet[%lu]: sid=%02x",
     mpeg->ofs,
     mpeg->streams[sid].packet_cnt - 1,
-    type,
-    sid, ssid, mpeg->packet.size
+    sid
   );
+
+  if (sid == 0xbd) {
+    fprintf (fp, "[%02x]", ssid);
+  }
+  else {
+    fputs ("    ", fp);
+  }
+
+  if (mpeg->packet.type == 1) {
+    fputs (" MPEG1", fp);
+  }
+  else if (mpeg->packet.type == 2) {
+    fputs (" MPEG2", fp);
+  }
+  else {
+    fputs (" UNKWN", fp);
+  }
+
+  fprintf (fp, " size=%u", mpeg->packet.size);
 
   if (mpeg->packet.have_pts || mpeg->packet.have_dts) {
     fprintf (fp,
