@@ -1,0 +1,12 @@
+# Makefile
+# $Id: Makefile.in,v 1.1 2003/02/02 20:26:13 hampa Exp $
+
+srcdir := @srcdir@
+topdir := @top_srcdir@
+subdir := src
+reldir := .
+
+include $(reldir)/Makefile.inc
+
+
+all:

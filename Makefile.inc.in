@@ -1,0 +1,85 @@
+# Makefile include file
+# $Id: Makefile.inc.in,v 1.1 2003/02/02 20:26:13 hampa Exp $
+
+#--------------------------------------------------------------------------
+# user editable section
+
+prefix  	= @prefix@
+exec_prefix	= @exec_prefix@
+bindir		= @bindir@
+libdir		= @libdir@
+incdir		= @includedir@
+
+
+# Executables
+
+CC		= @CC@
+CFLAGS		= @CFLAGS@
+CC_FLG		= $(CFLAGS) -I$(topdir)/src -I$(reldir)/src
+
+LD              = @CC@
+LDFLAGS		= @LDFLAGS@
+LD_FLG          = $(LDFLAGS)
+
+AR		= @AR@
+AR_FLG		= -rs
+
+LN_S		= @LN_S@
+LN_S_FLG	= -f
+
+INSTALL		= @INSTALL@
+INSTALL_FLG	=
+
+@SET_MAKE@
+MAKE_FLG	=
+
+
+# end of user editable section
+#--------------------------------------------------------------------------
+
+MPEGDEMUX_VERSION_MAJ := @MPEGDEMUX_VERSION_MAJ@
+MPEGDEMUX_VERSION_MIN := @MPEGDEMUX_VERSION_MIN@
+MPEGDEMUX_VERSION_MIC := @MPEGDEMUX_VERSION_MIC@
+MPEGDEMUX_VERSION_STR := @MPEGDEMUX_VERSION_STR@
+
+
+VPATH = $(srcdir)
+
+
+ifneq "$(dstdir)" "$(topdir)"
+CC_FLG	+= -I$(topdir)/src
+endif
+
+
+all: subdirs
+
+
+subdirs: subdirs-rec
+subdirs-rec:
+ifneq "$(subdir)" ""
+	@for dir in $(subdir); do \
+		(cd $$dir && $(MAKE) $(MAKE_FLG)); \
+	done
+endif
+
+
+clean: clean-rec
+clean-rec:
+ifneq "$(subdir)" ""
+	@for dir in $(subdir); do \
+		(cd $$dir && $(MAKE) $(MAKE_FLG) clean); \
+	done
+endif
+
+
+install: install-rec
+install-rec:
+ifneq "$(subdir)" ""
+	@for dir in $(subdir); do \
+		(cd $$dir && $(MAKE) $(MAKE_FLG) install); \
+	done
+endif
+
+
+%.o: %.c
+	$(CC) -c $(CC_FLG) -o $@ $<

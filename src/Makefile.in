@@ -1,0 +1,56 @@
+# Makefile
+# $Id: Makefile.in,v 1.1 2003/02/02 20:26:13 hampa Exp $
+
+srcdir := @srcdir@
+topdir := @top_srcdir@
+subdir :=
+reldir := ..
+
+include $(reldir)/Makefile.inc
+
+
+SRC	:= message.c mpegdemux.c mpeg_demux.c mpeg_list.c mpeg_parse.c mpeg_remux.c
+
+OBJ	:= message.o mpegdemux.o mpeg_demux.o mpeg_list.o mpeg_parse.o mpeg_remux.o
+OBJ_EXT	:=
+
+HDR	:= message.h mpegdemux.h mpeg_demux.h mpeg_list.h mpeg_parse.h mpeg_remux.h
+HDR_EXT	:=
+
+MAN	:=
+
+BIN	:= mpegdemux
+
+SDP	:= Makefile $(HDR) $(HDR_EXT)
+BDP	:= Makefile $(OBJ) $(OBJ_EXT)
+
+
+all: $(BIN)
+
+
+mpegdemux: $(BDP)
+	$(LD) $(LD_FLG) $(OBJ) $(OBJ_EXT) -o $@
+
+
+clean:
+	rm -f $(OBJ) $(BIN)
+
+
+install:
+	$(INSTALL) -d -m 755 $(bindir)
+	$(INSTALL) -m 755 -s $(BIN) $(bindir)
+ifneq "$(MAN)" ""
+	$(INSTALL) -d -m 755 $(mandir)/man1
+	for f in $(MAN) ; do \
+		rm -f $(mandir)/man1/$$f.gz ; \
+		gzip -c --best $(srcdir)/$$f > $(mandir)/man1/$$f.gz ; \
+	done
+endif
+
+
+message.o: message.c $(SDP)
+mpegdemux.o: mpegdemux.c $(SDP)
+mpeg_demux.o: mpeg_demux.c $(SDP)
+mpeg_list.o: mpeg_list.c $(SDP)
+mpeg_parse.o: mpeg_parse.c $(SDP)
+mpeg_remux.o: mpeg_remux.c $(SDP)
