@@ -5,8 +5,8 @@
 /*****************************************************************************
  * File name:     mpeg_scan.c                                                *
  * Created:       2003-02-07 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-09-10 by Hampa Hug <hampa@hampa.ch>                   *
- * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
+ * Last modified: 2004-04-08 by Hampa Hug <hampa@hampa.ch>                   *
+ * Copyright:     (C) 2003-2004 Hampa Hug <hampa@hampa.ch>                   *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_scan.c,v 1.9 2003/09/10 17:05:00 hampa Exp $ */
+/* $Id$ */
 
 
 #include "config.h"
@@ -35,6 +35,10 @@
 #include "mpegdemux.h"
 
 
+static unsigned long long pts1[256];
+static unsigned long long pts2[256];
+
+
 static
 int mpeg_scan_system_header (mpeg_demux_t *mpeg)
 {
@@ -45,6 +49,7 @@ static
 int mpeg_scan_packet (mpeg_demux_t *mpeg)
 {
   FILE               *fp;
+  int                skip;
   unsigned           sid, ssid;
   unsigned long long ofs;
 
@@ -65,14 +70,44 @@ int mpeg_scan_packet (mpeg_demux_t *mpeg)
     );
   }
 
+  skip = 0;
+
   if (sid == 0xbd) {
     if (mpeg->substreams[ssid].packet_cnt > 1) {
-      return (0);
+      if (!par_first_pts) {
+        return (0);
+      }
+
+      if (!mpeg->packet.have_pts) {
+        return (0);
+      }
+
+      if (mpeg->packet.pts >= pts2[ssid]) {
+        return (0);
+      }
+    }
+
+    if (mpeg->packet.pts < pts2[ssid]) {
+      pts2[ssid] = mpeg->packet.pts;
     }
   }
   else {
     if (mpeg->streams[sid].packet_cnt > 1) {
-      return (0);
+      if (!par_first_pts) {
+        return (0);
+      }
+
+      if (!mpeg->packet.have_pts) {
+        return (0);
+      }
+
+      if (mpeg->packet.pts >= pts1[sid]) {
+        return (0);
+      }
+    }
+
+    if (mpeg->packet.pts < pts1[sid]) {
+      pts1[sid] = mpeg->packet.pts;
     }
   }
 
@@ -131,7 +166,13 @@ int mpeg_scan_end (mpeg_demux_t *mpeg)
 int mpeg_scan (FILE *inp, FILE *out)
 {
   int          r;
+  unsigned     i;
   mpeg_demux_t *mpeg;
+
+  for (i = 0; i < 256; i++) {
+    pts1[i] = ~0ULL;
+    pts2[i] = ~0ULL;
+  }
 
   mpeg = mpegd_open_fp (NULL, inp, 0);
   if (mpeg == NULL) {

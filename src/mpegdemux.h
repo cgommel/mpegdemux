@@ -5,8 +5,8 @@
 /*****************************************************************************
  * File name:     mpegdemux.h                                                *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-09-10 by Hampa Hug <hampa@hampa.ch>                   *
- * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
+ * Last modified: 2004-04-08 by Hampa Hug <hampa@hampa.ch>                   *
+ * Copyright:     (C) 2003-2004 Hampa Hug <hampa@hampa.ch>                   *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.h,v 1.13 2003/09/10 17:05:00 hampa Exp $ */
+/* $Id$ */
 
 
 #ifndef MPEGDEMUX_H
@@ -49,6 +49,7 @@ extern int           par_empty_pack;
 extern int           par_split;
 extern int           par_drop;
 extern int           par_scan;
+extern int           par_first_pts;
 extern int           par_dvdac3;
 extern int           par_dvdsub;
 extern char          *par_demux_name;

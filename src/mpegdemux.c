@@ -5,8 +5,8 @@
 /*****************************************************************************
  * File name:     mpegdemux.c                                                *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-12-30 by Hampa Hug <hampa@hampa.ch>                   *
- * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
+ * Last modified: 2004-04-08 by Hampa Hug <hampa@hampa.ch>                   *
+ * Copyright:     (C) 2003-2004 Hampa Hug <hampa@hampa.ch>                   *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.c,v 1.20 2003/12/30 10:52:35 hampa Exp $ */
+/* $Id$ */
 
 
 #include "config.h"
@@ -56,6 +56,7 @@ int             par_empty_pack = 0;
 int             par_split = 0;
 int             par_drop = 1;
 int             par_scan = 0;
+int             par_first_pts = 0;
 int             par_dvdac3 = 0;
 int             par_dvdsub = 0;
 char            *par_demux_name = NULL;
@@ -81,6 +82,7 @@ void prt_help (void)
     "  -e, --no-end             Don't list end codes [no]\n"
     "  -D, --no-drop            Don't drop incomplete packets\n"
     "  -P, --empty-packs        Remux empty packs [no]\n"
+    "  -F, --first-pts          Print packet with lowest PTS [no]\n"
     "  -a, --ac3                Assume DVD AC3 headers in private streams\n"
     "  -u, --spu                Assume DVD subtitles in private streams\n",
     stdout
@@ -466,6 +468,9 @@ int main (int argc, char **argv)
     }
     else if (str_isarg2 (argv[argi], "-D", "--no-drop")) {
       par_drop = 0;
+    }
+    else if (str_isarg2 (argv[argi], "-F", "--first-pts")) {
+      par_first_pts = 1;
     }
     else if (str_isarg2 (argv[argi], "-a", "--ac3")) {
       par_dvdac3 = 1;
