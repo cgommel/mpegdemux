@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_parse.c                                               *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-04-09 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-07-28 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.c,v 1.16 2003/04/08 23:21:11 hampa Exp $ */
+/* $Id: mpeg_parse.c,v 1.17 2003/07/28 06:13:10 hampa Exp $ */
 
 
 #include "config.h"
@@ -328,11 +328,109 @@ int mpegd_parse_system_header (mpeg_demux_t *mpeg)
 }
 
 static
+int mpegd_parse_packet1 (mpeg_demux_t *mpeg, unsigned i)
+{
+  unsigned           val;
+  unsigned long long tmp;
+
+  mpeg->packet.type = 1;
+
+  if (mpegd_get_bits (mpeg, i, 2) == 0x01) {
+    i += 16;
+  }
+
+  val = mpegd_get_bits (mpeg, i, 8);
+
+  if ((val & 0xf0) == 0x20) {
+    tmp = mpegd_get_bits (mpeg, i + 4, 3);
+    tmp = (tmp << 15) | mpegd_get_bits (mpeg, i + 8, 15);
+    tmp = (tmp << 15) | mpegd_get_bits (mpeg, i + 24, 15);
+
+    mpeg->packet.have_pts = 1;
+    mpeg->packet.pts = tmp;
+
+    i += 40;
+  }
+  else if ((val & 0xf0) == 0x30) {
+    tmp = mpegd_get_bits (mpeg, i + 4, 3);
+    tmp = (tmp << 15) | mpegd_get_bits (mpeg, i + 8, 15);
+    tmp = (tmp << 15) | mpegd_get_bits (mpeg, i + 24, 15);
+
+    mpeg->packet.have_pts = 1;
+    mpeg->packet.pts = tmp;
+
+    tmp = mpegd_get_bits (mpeg, i + 44, 3);
+    tmp = (tmp << 15) | mpegd_get_bits (mpeg, i + 48, 15);
+    tmp = (tmp << 15) | mpegd_get_bits (mpeg, i + 64, 15);
+
+    mpeg->packet.have_dts = 1;
+    mpeg->packet.dts = tmp;
+
+    i += 80;
+  }
+  else if (val == 0x0f) {
+    i += 8;
+  }
+
+  mpeg->packet.offset = i / 8;
+
+  return (0);
+}
+
+static
+int mpegd_parse_packet2 (mpeg_demux_t *mpeg, unsigned i)
+{
+  unsigned           pts_dts_flag;
+  unsigned           cnt;
+  unsigned long long tmp;
+
+  mpeg->packet.type = 2;
+
+  pts_dts_flag = mpegd_get_bits (mpeg, i + 8, 2);
+  cnt = mpegd_get_bits (mpeg, i + 16, 8);
+
+  if (pts_dts_flag == 0x02) {
+    if (mpegd_get_bits (mpeg, i + 24, 4) == 0x02) {
+      tmp = mpegd_get_bits (mpeg, i + 28, 3);
+      tmp = (tmp << 15) | mpegd_get_bits (mpeg, i + 32, 15);
+      tmp = (tmp << 15) | mpegd_get_bits (mpeg, i + 48, 15);
+
+      mpeg->packet.have_pts = 1;
+      mpeg->packet.pts = tmp;
+    }
+  }
+  else if ((pts_dts_flag & 0x03) == 0x03) {
+    if (mpegd_get_bits (mpeg, i + 24, 4) == 0x03) {
+      tmp = mpegd_get_bits (mpeg, i + 28, 3);
+      tmp = (tmp << 15) | mpegd_get_bits (mpeg, i + 32, 15);
+      tmp = (tmp << 15) | mpegd_get_bits (mpeg, i + 48, 15);
+
+      mpeg->packet.have_pts = 1;
+      mpeg->packet.pts = tmp;
+    }
+
+    if (mpegd_get_bits (mpeg, i + 64, 4) == 0x01) {
+      tmp = mpegd_get_bits (mpeg, i + 68, 3);
+      tmp = (tmp << 15) | mpegd_get_bits (mpeg, i + 72, 15);
+      tmp = (tmp << 15) | mpegd_get_bits (mpeg, i + 88, 15);
+
+      mpeg->packet.have_dts = 1;
+      mpeg->packet.dts = tmp;
+    }
+  }
+
+  i += 8 * (cnt + 3);
+
+  mpeg->packet.offset = i / 8;
+
+  return (0);
+}
+
+static
 int mpegd_parse_packet (mpeg_demux_t *mpeg)
 {
   unsigned           i;
   unsigned           sid, ssid;
-  unsigned long long pts;
   unsigned long long ofs;
 
   mpeg->packet.type = 0;
@@ -340,11 +438,20 @@ int mpegd_parse_packet (mpeg_demux_t *mpeg)
   sid = mpegd_get_bits (mpeg, 24, 8);
   ssid = 0;
 
-  mpeg->packet.size = mpegd_get_bits (mpeg, 32, 16) + 6;
+  mpeg->packet.sid = sid;
+  mpeg->packet.ssid = ssid;
 
-  pts = 0;
+  mpeg->packet.size = mpegd_get_bits (mpeg, 32, 16) + 6;
+  mpeg->packet.offset = 6;
+
+  mpeg->packet.have_pts = 0;
+  mpeg->packet.pts = 0;
+
+  mpeg->packet.have_dts = 0;
+  mpeg->packet.dts = 0;
 
   i = 48;
+
   if (((sid >= 0xc0) && (sid < 0xf0)) || (sid == 0xbd)) {
     while (mpegd_get_bits (mpeg, i, 8) == 0xff) {
       if (i > (48 + 16 * 8)) {
@@ -354,64 +461,24 @@ int mpegd_parse_packet (mpeg_demux_t *mpeg)
     }
 
     if (mpegd_get_bits (mpeg, i, 2) == 0x02) {
-      int      pts_dts_flag;
-      unsigned cnt;
-
-      mpeg->packet.type = 2;
-
-      pts_dts_flag = mpegd_get_bits (mpeg, i + 8, 2);
-      cnt = mpegd_get_bits (mpeg, i + 16, 8);
-
-      if (pts_dts_flag & 2) {
-        if (mpegd_get_bits (mpeg, i + 24, 4) == 0x02) {
-          pts = mpegd_get_bits (mpeg, i + 28, 3);
-          pts = (pts << 15) | mpegd_get_bits (mpeg, i + 32, 15);
-          pts = (pts << 15) | mpegd_get_bits (mpeg, i + 48, 15);
-        }
+      if (mpegd_parse_packet2 (mpeg, i)) {
+        return (1);
       }
-
-      i += 8 * (cnt + 3);
     }
     else {
-      unsigned val;
-
-      mpeg->packet.type = 1;
-
-      if (mpegd_get_bits (mpeg, i, 2) == 0x01) {
-        i += 16;
-      }
-
-      val = mpegd_get_bits (mpeg, i, 8);
-
-      if ((val & 0xf0) == 0x20) {
-        pts = mpegd_get_bits (mpeg, i + 4, 3);
-        pts = (pts << 15) | mpegd_get_bits (mpeg, i + 8, 15);
-        pts = (pts << 15) | mpegd_get_bits (mpeg, i + 24, 15);
-        i += 40;
-      }
-      else if ((val & 0xf0) == 0x30) {
-        pts = mpegd_get_bits (mpeg, i + 4, 3);
-        pts = (pts << 15) | mpegd_get_bits (mpeg, i + 8, 15);
-        pts = (pts << 15) | mpegd_get_bits (mpeg, i + 24, 15);
-        i += 80;
-      }
-      else if (val == 0x0f) {
-        i += 8;
-      }
-      else {
-        mpeg->packet.type = 0;
+      if (mpegd_parse_packet1 (mpeg, i)) {
+        return (1);
       }
     }
+  }
+  else if (sid == 0xbe) {
+    mpeg->packet.type = 1;
   }
 
   if (sid == 0xbd) {
-    ssid = mpegd_get_bits (mpeg, i, 8);
+    ssid = mpegd_get_bits (mpeg, 8 * mpeg->packet.offset, 8);
+    mpeg->packet.ssid = ssid;
   }
-
-  mpeg->packet.sid = sid;
-  mpeg->packet.ssid = ssid;
-  mpeg->packet.pts = pts;
-  mpeg->packet.offset = i / 8;
 
   mpeg->packet_cnt += 1;
   mpeg->streams[sid].packet_cnt += 1;

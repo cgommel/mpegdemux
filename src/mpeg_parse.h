@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_parse.h                                               *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-04-08 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-07-27 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.h,v 1.11 2003/04/08 19:01:58 hampa Exp $ */
+/* $Id: mpeg_parse.h,v 1.12 2003/07/28 06:13:10 hampa Exp $ */
 
 
 #ifndef MPEG_PARSE_H
@@ -57,7 +57,12 @@ typedef struct {
   unsigned           ssid;
   unsigned           size;
   unsigned           offset;
+
+  char               have_pts;
   unsigned long long pts;
+
+  char               have_dts;
+  unsigned long long dts;
 } mpeg_packet_t;
 
 typedef struct {
