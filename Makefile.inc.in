@@ -1,5 +1,5 @@
 # Makefile include file
-# $Id: Makefile.inc.in,v 1.3 2003/03/08 08:43:40 hampa Exp $
+# $Id: Makefile.inc.in,v 1.4 2003/10/21 04:41:11 hampa Exp $
 
 #--------------------------------------------------------------------------
 # user editable section
@@ -42,6 +42,7 @@ MPEGDEMUX_VERSION_MAJ := @MPEGDEMUX_VERSION_MAJ@
 MPEGDEMUX_VERSION_MIN := @MPEGDEMUX_VERSION_MIN@
 MPEGDEMUX_VERSION_MIC := @MPEGDEMUX_VERSION_MIC@
 MPEGDEMUX_VERSION_STR := @MPEGDEMUX_VERSION_STR@
+MPEGDEMUX_VERSION_REL := @MPEGDEMUX_VERSION_REL@
 
 MPEGDEMUX_CFG_TIME := @MPEGDEMUX_CFG_TIME@
 MPEGDEMUX_CFG_DATE := @MPEGDEMUX_CFG_DATE@
