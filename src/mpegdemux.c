@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpegdemux.c                                                *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-02-04 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-02-08 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.c,v 1.6 2003/02/04 22:16:17 hampa Exp $ */
+/* $Id: mpegdemux.c,v 1.7 2003/02/08 07:11:56 hampa Exp $ */
 
 
 #include "config.h"
@@ -49,6 +49,7 @@ unsigned char par_stream[256];
 unsigned char par_substream[256];
 int           par_one_shdr = 0;
 int           par_one_pack = 0;
+int           par_one_end = 0;
 unsigned char par_first = 0;
 int           par_dvdac3 = 0;
 
@@ -68,6 +69,7 @@ void prt_help (void)
     "  -b, --base-name name     Set the base name for demuxed streams\n"
     "  -h, --one-system-header  Repeat system headers [no]\n"
     "  -k, --one-pack           Repeat packs [no]\n"
+    "  -e, --one-end            Remove intermediate end codes [no]\n"
     "  -a, --ac3                Assume DVD AC3 headers\n",
     stdout
   );
@@ -329,6 +331,9 @@ int main (int argc, char **argv)
     }
     else if (str_isarg2 (argv[argi], "-k", "--one-packs")) {
       par_one_pack = 1;
+    }
+    else if (str_isarg2 (argv[argi], "-e", "--one-end")) {
+      par_one_end = 1;
     }
     else if (str_isarg2 (argv[argi], "-f", "--first")) {
       par_first = 1;

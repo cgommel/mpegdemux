@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_remux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-02-04 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-02-08 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_remux.c,v 1.3 2003/02/04 22:16:17 hampa Exp $ */
+/* $Id: mpeg_remux.c,v 1.4 2003/02/08 07:11:56 hampa Exp $ */
 
 
 #include <stdio.h>
@@ -104,6 +104,10 @@ int mpeg_remux_pack (mpeg_demux_t *mpeg)
 static
 int mpeg_remux_end (mpeg_demux_t *mpeg)
 {
+  if (par_one_end) {
+    return (0);
+  }
+
   return (mpeg_remux_copy (mpeg, 4));
 }
 
@@ -125,6 +129,17 @@ int mpeg_remux (FILE *inp, FILE *out)
   mpeg->mpeg_end = &mpeg_remux_end;
 
   r = mpegd_parse (mpeg);
+
+  if (par_one_end) {
+    unsigned char buf[4];
+
+    buf[0] = (MPEG_END_CODE >> 24) & 0xff;
+    buf[1] = (MPEG_END_CODE >> 16) & 0xff;
+    buf[2] = (MPEG_END_CODE >> 8) & 0xff;
+    buf[3] = MPEG_END_CODE & 0xff;
+
+    fwrite (buf, 1, 4, out);
+  }
 
   mpegd_close (mpeg);
 

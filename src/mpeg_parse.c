@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_parse.c                                               *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-02-05 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-02-08 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.c,v 1.9 2003/02/05 03:00:54 hampa Exp $ */
+/* $Id: mpeg_parse.c,v 1.10 2003/02/08 07:11:56 hampa Exp $ */
 
 
 #include <stdlib.h>
@@ -95,6 +95,7 @@ void mpegd_reset_stats (mpeg_demux_t *mpeg)
   mpeg->shdr_cnt = 0;
   mpeg->pack_cnt = 0;
   mpeg->packet_cnt = 0;
+  mpeg->end_cnt = 0;
   mpeg->skip_cnt = 0;
 
   for (i = 0; i < 256; i++) {
@@ -495,28 +496,32 @@ int mpegd_parse (mpeg_demux_t *mpeg)
 {
   unsigned long long ofs;
 
-  mpegd_seek_header (mpeg);
+  while (1) {
+    mpegd_seek_header (mpeg);
 
-  while (mpegd_get_bits (mpeg, 0, 32) == MPEG_PACK_START) {
-    if (mpegd_parse_pack (mpeg)) {
-      return (1);
-    }
+    switch (mpegd_get_bits (mpeg, 0, 32)) {
+      case MPEG_PACK_START:
+        if (mpegd_parse_pack (mpeg)) {
+          return (1);
+        }
+        break;
 
-    if (mpegd_seek_header (mpeg)) {
-      return (1);
-    }
-  }
+      case MPEG_END_CODE:
+        mpeg->end_cnt += 1;
 
-  if (mpegd_get_bits (mpeg, 0, 32) == MPEG_END_CODE) {
-    ofs = mpeg->ofs + 4;
+        ofs = mpeg->ofs + 4;
 
-    if (mpeg->mpeg_end != NULL) {
-      if (mpeg->mpeg_end (mpeg)) {
+        if (mpeg->mpeg_end != NULL) {
+          if (mpeg->mpeg_end (mpeg)) {
+            return (1);
+          }
+        }
+        mpegd_set_offset (mpeg, ofs);
+        break;
+
+      default:
         return (1);
-      }
     }
-
-    mpegd_set_offset (mpeg, ofs);
   }
 
   return (0);
