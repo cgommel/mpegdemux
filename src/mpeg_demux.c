@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_demux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-02-04 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-03-02 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,8 +20,10 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_demux.c,v 1.4 2003/02/04 22:16:16 hampa Exp $ */
+/* $Id: mpeg_demux.c,v 1.5 2003/03/02 11:19:28 hampa Exp $ */
 
+
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -124,6 +126,8 @@ int mpeg_demux_packet (mpeg_demux_t *mpeg)
 
   /* select substream in private stream 1 (AC3 audio) */
   if (sid == 0xbd) {
+    cnt += 1;
+
     if (par_dvdac3) {
       cnt += 4;
     }
