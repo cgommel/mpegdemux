@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpegdemux.c                                                *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-04-08 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-06-07 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpegdemux.c,v 1.17 2003/04/08 19:19:30 hampa Exp $ */
+/* $Id: mpegdemux.c,v 1.18 2003/06/07 18:55:46 hampa Exp $ */
 
 
 #include "config.h"
@@ -51,6 +51,7 @@ int             par_no_pack = 0;
 int             par_no_packet = 0;
 int             par_no_end = 0;
 int             par_empty_pack = 0;
+int             par_split = 0;
 int             par_drop = 1;
 int             par_scan = 0;
 int             par_dvdac3 = 0;
@@ -70,6 +71,7 @@ void prt_help (void)
     "  -s, --stream id          Select streams [none]\n"
     "  -p, --substream id       Select substreams [none]\n"
     "  -b, --base-name name     Set the base name for demuxed streams\n"
+    "  -x, --split              Split sequences while remuxing [no]\n"
     "  -h, --no-system-headers  Don't list system headers\n"
     "  -k, --no-packs           Don't list packs\n"
     "  -t, --no-packets         Don't list packets\n"
@@ -213,6 +215,47 @@ int str_get_streams (const char *str, unsigned char stm[256])
   }
 
   return (0);
+}
+
+char *mpeg_get_name (const char *base, unsigned sid)
+{
+  unsigned n;
+  unsigned dig;
+  char     *ret;
+
+  if (base == NULL) {
+    base = "stream_##.dat";
+  }
+
+  n = 0;
+  while (base[n] != 0) {
+    n += 1;
+  }
+
+  n += 1;
+
+  ret = (char *) malloc (n);
+  if (ret == NULL) {
+    return (NULL);
+  }
+
+  while (n > 0) {
+    n -= 1;
+    ret[n] = base[n];
+
+    if (ret[n] == '#') {
+      dig = sid % 16;
+      sid = sid / 16;
+      if (dig < 10) {
+        ret[n] = '0' + dig;
+      }
+      else {
+        ret[n] = 'a' + dig - 10;
+      }
+    }
+  }
+
+  return (ret);
 }
 
 int mpeg_stream_excl (unsigned char sid, unsigned char ssid)
@@ -368,6 +411,9 @@ int main (int argc, char **argv)
       }
 
       par_demux_name = str_clone (argv[argi]);
+    }
+    else if (str_isarg2 (argv[argi], "-x", "--split")) {
+      par_split = 1;
     }
     else if (str_isarg2 (argv[argi], "-h", "--no-system-headers")) {
       par_no_shdr = 1;

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_demux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-04-08 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-06-07 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_demux.c,v 1.9 2003/04/08 19:01:58 hampa Exp $ */
+/* $Id: mpeg_demux.c,v 1.10 2003/06/07 18:55:46 hampa Exp $ */
 
 
 #include "config.h"
@@ -40,48 +40,6 @@ static FILE *fp[256];
 
 static mpeg_buffer_t packet = { NULL, 0, 0 };
 
-
-static
-char *mpeg_demux_get_name (const char *base, unsigned sid)
-{
-  unsigned n;
-  unsigned dig;
-  char     *ret;
-
-  if (base == NULL) {
-    base = "stream_##.dat";
-  }
-
-  n = 0;
-  while (base[n] != 0) {
-    n += 1;
-  }
-
-  n += 1;
-
-  ret = (char *) malloc (n);
-  if (ret == NULL) {
-    return (NULL);
-  }
-
-  while (n > 0) {
-    n -= 1;
-    ret[n] = base[n];
-
-    if (ret[n] == '#') {
-      dig = sid % 16;
-      sid = sid / 16;
-      if (dig < 10) {
-        ret[n] = '0' + dig;
-      }
-      else {
-        ret[n] = 'a' + dig - 10;
-      }
-    }
-  }
-
-  return (ret);
-}
 
 static
 int mpeg_demux_copy_spu (mpeg_demux_t *mpeg, FILE *fp, unsigned cnt)
@@ -185,7 +143,7 @@ int mpeg_demux_packet (mpeg_demux_t *mpeg)
     else {
       char *name;
 
-      name = mpeg_demux_get_name (par_demux_name, sid);
+      name = mpeg_get_name (par_demux_name, sid);
       fp[sid] = fopen (name, "wb");
       if (fp[sid] == NULL) {
         prt_err ("can't open stream file (%s)\n", name);

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_remux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-04-08 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-06-07 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_remux.c,v 1.9 2003/04/08 19:01:58 hampa Exp $ */
+/* $Id: mpeg_remux.c,v 1.10 2003/06/07 18:55:46 hampa Exp $ */
 
 
 #include "config.h"
@@ -44,6 +44,40 @@ static mpeg_buffer_t shdr = { NULL, 0, 0 };
 static mpeg_buffer_t pack = { NULL, 0, 0 };
 static mpeg_buffer_t packet = { NULL, 0, 0 };
 
+static unsigned sequence = 0;
+
+
+static
+int mpeg_remux_next_fp (mpeg_demux_t *mpeg)
+{
+  char *fname;
+  FILE *fp;
+
+  fp = (FILE *) mpeg->ext;
+  if (fp != NULL) {
+    fclose (fp);
+    mpeg->ext = NULL;
+  }
+
+  fname = mpeg_get_name (par_demux_name, sequence);
+  if (fname == NULL) {
+    return (1);
+  }
+
+  sequence += 1;
+
+  fp = fopen (fname, "wb");
+
+  free (fname);
+
+  if (fp == NULL) {
+    return (1);
+  }
+
+  mpeg->ext = fp;
+
+  return (0);
+}
 
 static
 int mpeg_remux_system_header (mpeg_demux_t *mpeg)
@@ -133,6 +167,12 @@ int mpeg_remux_end (mpeg_demux_t *mpeg)
     return (1);
   }
 
+  if (par_split) {
+    if (mpeg_remux_next_fp (mpeg)) {
+      return (1);
+    }
+  }
+
   return (0);
 }
 
@@ -146,7 +186,17 @@ int mpeg_remux (FILE *inp, FILE *out)
     return (1);
   }
 
-  mpeg->ext = out;
+  if (par_split) {
+    mpeg->ext = NULL;
+    sequence = 0;
+
+    if (mpeg_remux_next_fp (mpeg)) {
+      return (1);
+    }
+  }
+  else {
+    mpeg->ext = out;
+  }
 
   mpeg->mpeg_system_header = &mpeg_remux_system_header;
   mpeg->mpeg_pack = &mpeg_remux_pack;
@@ -167,7 +217,12 @@ int mpeg_remux (FILE *inp, FILE *out)
     buf[2] = (MPEG_END_CODE >> 8) & 0xff;
     buf[3] = MPEG_END_CODE & 0xff;
 
-    fwrite (buf, 1, 4, out);
+    fwrite (buf, 1, 4, (FILE *) mpeg->ext);
+  }
+
+  if (par_split) {
+    fclose ((FILE *) mpeg->ext);
+    mpeg->ext = NULL;
   }
 
   mpegd_close (mpeg);

@@ -120,6 +120,13 @@ $ mpegdemux -d -b video_##.m1v -s 0xc0-0xcf src.mpg
 to get files video_c0.m1v, video-c1.m1v, ...
 \
 .TP
+.B -x, --split
+Split the remuxed stream at sequence boundaries. This option is
+only meaningful in remuxing mode. It can not be used together
+with the -e option. The individual sequences are written to
+files whose name was set with the -b option.
+\
+.TP
 .B -h, --no-system-headers
 Don't print system headers in listing mode. Additionally, in
 remuxing mode, don't repeat system headers.
