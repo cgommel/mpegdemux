@@ -5,7 +5,7 @@
 #*****************************************************************************
 #* File name:     configure.in                                               *
 #* Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
-#* Last modified: 2003-07-12 by Hampa Hug <hampa@hampa.ch>                   *
+#* Last modified: 2003-08-10 by Hampa Hug <hampa@hampa.ch>                   *
 #* Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
 #*****************************************************************************
 
@@ -20,7 +20,7 @@
 #* Public License for more details.                                          *
 #*****************************************************************************
 
-# $Id: configure.in,v 1.10 2003/07/12 12:14:59 hampa Exp $
+# $Id: configure.in,v 1.11 2003/08/10 21:35:13 hampa Exp $
 
 AC_PREREQ(2.50)
 
@@ -31,8 +31,8 @@ AC_CONFIG_HEADER(src/config.h)
 dnl -----------------------------------------------------------------------
 
 MPEGDEMUX_VERSION_MAJ=0
-MPEGDEMUX_VERSION_MIN=0
-MPEGDEMUX_VERSION_MIC=5
+MPEGDEMUX_VERSION_MIN=1
+MPEGDEMUX_VERSION_MIC=0
 MPEGDEMUX_VERSION_STR="$MPEGDEMUX_VERSION_MAJ.$MPEGDEMUX_VERSION_MIN.$MPEGDEMUX_VERSION_MIC"
 AC_SUBST(MPEGDEMUX_VERSION_MAJ)
 AC_SUBST(MPEGDEMUX_VERSION_MIN)
