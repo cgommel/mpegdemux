@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_list.c,v 1.1 2003/02/02 20:26:13 hampa Exp $ */
+/* $Id: mpeg_list.c,v 1.2 2003/02/02 21:14:49 hampa Exp $ */
 
 
 #include <stdio.h>
@@ -36,19 +36,17 @@
 static
 int mpeg_list_system_header (mpeg_demux_t *mpeg)
 {
-  static int first = 1;
-  FILE       *fp;
+  FILE *fp;
 
-  if (par_list_first && !first) {
+  if (par_list_first && (mpeg->shdr_cnt > 1)) {
     return (0);
   }
 
-  first = 0;
-
   fp = (FILE *) mpeg->ext;
 
-  fprintf (fp, "%08llx: system header: size=%u fixed=%d csps=%d\n",
-    mpeg->ofs, mpeg->sh_size, mpeg->sh_fixed, mpeg->sh_csps
+  fprintf (fp, "%08llx: system header[%lu]: size=%u fixed=%d csps=%d\n",
+    mpeg->ofs, mpeg->shdr_cnt - 1,
+    mpeg->sh_size, mpeg->sh_fixed, mpeg->sh_csps
   );
 
   return (0);
@@ -66,16 +64,15 @@ int mpeg_list_packet (mpeg_demux_t *mpeg)
     return (0);
   }
 
-  if (par_list_first && (par_stream[id] & PAR_STREAM_SEEN)) {
+  if (par_list_first && (mpeg->streams[id].packet_cnt > 1)) {
     return (0);
   }
 
-  par_stream[id] |= PAR_STREAM_SEEN;
-
   fp = (FILE *) mpeg->ext;
 
-  fprintf (fp, "%08llx: packet: stream id=%02x size=%u pts=%llu[%.4f]\n",
-    mpeg->ofs, mpeg->packet_stm_id, mpeg->packet_size,
+  fprintf (fp, "%08llx: packet[%lu]: stream id=%02x size=%u pts=%llu[%.4f]\n",
+    mpeg->ofs, mpeg->streams[id].packet_cnt - 1,
+    mpeg->packet_stm_id, mpeg->packet_size,
     mpeg->packet_pts, (double) mpeg->packet_pts / 90000.0
   );
 
@@ -85,19 +82,17 @@ int mpeg_list_packet (mpeg_demux_t *mpeg)
 static
 int mpeg_list_pack (mpeg_demux_t *mpeg)
 {
-  static int first = 1;
-  FILE       *fp;
+  FILE *fp;
 
-  if (par_list_first && !first) {
+  if (par_list_first && (mpeg->pack_cnt > 1)) {
     return (0);
   }
 
-  first = 0;
-
   fp = (FILE *) mpeg->ext;
 
-  fprintf (fp, "%08llx: pack: scr=%llu[%.4fs] mux=%lu[%.2f bytes/s]\n",
-    mpeg->ofs, mpeg->pack_scr, (double) mpeg->pack_scr / 90000.0,
+  fprintf (fp, "%08llx: pack[%lu]: scr=%llu[%.4fs] mux=%lu[%.2f bytes/s]\n",
+    mpeg->ofs, mpeg->pack_cnt - 1,
+    mpeg->pack_scr, (double) mpeg->pack_scr / 90000.0,
     mpeg->pack_mux_rate, 50.0 * mpeg->pack_mux_rate
   );
 
@@ -118,6 +113,7 @@ int mpeg_list_end (mpeg_demux_t *mpeg)
 
 int mpeg_list (FILE *inp, FILE *out)
 {
+  unsigned     i;
   int          r;
   mpeg_demux_t *mpeg;
 
@@ -136,6 +132,22 @@ int mpeg_list (FILE *inp, FILE *out)
   r = mpegd_parse (mpeg);
 
   mpegd_close (mpeg);
+
+  fprintf (out,
+    "\n"
+    "Packs:          %lu\n"
+    "System headers: %lu\n"
+    "Packets:        %lu\n",
+    mpeg->pack_cnt, mpeg->shdr_cnt, mpeg->packet_cnt
+  );
+
+  for (i = 0; i < 256; i++) {
+    if (mpeg->streams[i].packet_cnt > 0) {
+      fprintf (out, "Stream %02x:      %lu packets / %llu bytes\n",
+        i, mpeg->streams[i].packet_cnt, mpeg->streams[i].size
+      );
+    }
+  }
 
   return (r);
 }

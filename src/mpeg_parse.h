@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.h,v 1.1 2003/02/02 20:26:13 hampa Exp $ */
+/* $Id: mpeg_parse.h,v 1.2 2003/02/02 21:14:49 hampa Exp $ */
 
 
 #ifndef MPEG_PARSE_H
@@ -37,6 +37,11 @@
 #define MPEG_SYSTEM_HEADER 0x01bb
 #define MPEG_PACKET_START  0x0001
 
+
+typedef struct {
+  unsigned long      packet_cnt;
+  unsigned long long size;
+} mpeg_stream_info_t;
 
 typedef struct mpeg_demux_t {
   int                close;
@@ -62,6 +67,11 @@ typedef struct mpeg_demux_t {
   unsigned           packet_offset;
   unsigned long long packet_pts;
 
+  unsigned long      shdr_cnt;
+  unsigned long      pack_cnt;
+  unsigned long      packet_cnt;
+  mpeg_stream_info_t streams[256];
+
   void               *ext;
 
   int (*mpeg_skip) (struct mpeg_demux_t *mpeg);
@@ -75,6 +85,7 @@ typedef struct mpeg_demux_t {
 mpeg_demux_t *mpegd_open_fp (mpeg_demux_t *mpeg, FILE *fp, int close);
 mpeg_demux_t *mpegd_open (mpeg_demux_t *mpeg, const char *fname);
 void mpegd_close (mpeg_demux_t *mpeg);
+void mpegd_reset_stats (mpeg_demux_t *mpeg);
 unsigned long mpegd_get_bits (mpeg_demux_t *mpeg, unsigned i, unsigned n);
 int mpegd_skip (mpeg_demux_t *mpeg, unsigned n);
 int mpegd_read (mpeg_demux_t *mpeg, void *buf, unsigned n);

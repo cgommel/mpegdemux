@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.c,v 1.1 2003/02/02 20:26:13 hampa Exp $ */
+/* $Id: mpeg_parse.c,v 1.2 2003/02/02 21:14:49 hampa Exp $ */
 
 
 #include <stdlib.h>
@@ -58,6 +58,8 @@ mpeg_demux_t *mpegd_open_fp (mpeg_demux_t *mpeg, FILE *fp, int close)
   mpeg->mpeg_pack = NULL;
   mpeg->mpeg_end = NULL;
 
+  mpegd_reset_stats (mpeg);
+
   return (mpeg);
 }
 
@@ -83,6 +85,20 @@ void mpegd_close (mpeg_demux_t *mpeg)
 
   if (mpeg->free) {
     free (mpeg);
+  }
+}
+
+void mpegd_reset_stats (mpeg_demux_t *mpeg)
+{
+  unsigned i;
+
+  mpeg->shdr_cnt = 0;
+  mpeg->pack_cnt = 0;
+  mpeg->packet_cnt = 0;
+
+  for (i = 0; i < 256; i++) {
+    mpeg->streams[i].packet_cnt = 0;
+    mpeg->streams[i].size = 0;
   }
 }
 
@@ -283,6 +299,8 @@ int mpegd_parse_system_header (mpeg_demux_t *mpeg)
   mpeg->sh_fixed = mpegd_get_bits (mpeg, 78, 1);
   mpeg->sh_csps = mpegd_get_bits (mpeg, 79, 1);
 
+  mpeg->shdr_cnt += 1;
+
   ofs = mpeg->ofs + 6 + mpeg->sh_size;
 
   if (mpeg->mpeg_system_header != NULL) {
@@ -301,10 +319,11 @@ int mpegd_parse_packet (mpeg_demux_t *mpeg)
 {
   unsigned           i;
   unsigned           val;
+  unsigned           sid;
   unsigned long long pts;
   unsigned long long ofs;
 
-  mpeg->packet_stm_id = mpegd_get_bits (mpeg, 24, 8);
+  sid = mpegd_get_bits (mpeg, 24, 8);
   mpeg->packet_size = mpegd_get_bits (mpeg, 32, 16);
 
   pts = 0;
@@ -341,8 +360,13 @@ int mpegd_parse_packet (mpeg_demux_t *mpeg)
     }
   }
 
+  mpeg->packet_stm_id = sid;
   mpeg->packet_pts = pts;
   mpeg->packet_offset = i / 8;
+
+  mpeg->packet_cnt += 1;
+  mpeg->streams[sid].packet_cnt += 1;
+  mpeg->streams[sid].size += mpeg->packet_size + 6 - mpeg->packet_offset;
 
   ofs = mpeg->ofs + 6 + mpeg->packet_size;
 
@@ -372,6 +396,8 @@ int mpegd_parse_pack (mpeg_demux_t *mpeg)
   mpeg->pack_scr = (mpeg->pack_scr << 15) | mpegd_get_bits (mpeg, 56, 15);
 
   mpeg->pack_mux_rate = mpegd_get_bits (mpeg, 73, 22);
+
+  mpeg->pack_cnt += 1;
 
   ofs = mpeg->ofs + 12;
 
