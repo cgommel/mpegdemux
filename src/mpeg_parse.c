@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_parse.c                                               *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-07 by Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2003-04-03 by Hampa Hug <hampa@hampa.ch>                   *
  * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
@@ -20,7 +20,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.c,v 1.12 2003/03/07 08:16:10 hampa Exp $ */
+/* $Id: mpeg_parse.c,v 1.13 2003/04/03 18:09:54 hampa Exp $ */
 
 
 #include "config.h"
@@ -288,8 +288,6 @@ static
 int mpegd_seek_header (mpeg_demux_t *mpeg)
 {
   while (mpegd_get_bits (mpeg, 0, 24) != 1) {
-    mpeg->skip_cnt += 1;
-
     if (mpeg->mpeg_skip != NULL) {
       if (mpeg->mpeg_skip (mpeg)) {
         return (1);
@@ -299,6 +297,8 @@ int mpegd_seek_header (mpeg_demux_t *mpeg)
     if (mpegd_skip (mpeg, 1)) {
       return (1);
     }
+
+    mpeg->skip_cnt += 1;
   }
 
   return (0);
