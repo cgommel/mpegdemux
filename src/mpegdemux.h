@@ -5,8 +5,8 @@
 /*****************************************************************************
  * File name:     mpegdemux.h                                                *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2004-10-12 by Hampa Hug <hampa@hampa.ch>                   *
- * Copyright:     (C) 2003-2004 Hampa Hug <hampa@hampa.ch>                   *
+ * Last modified: 2005-04-24 by Hampa Hug <hampa@hampa.ch>                   *
+ * Copyright:     (C) 2003-2005 Hampa Hug <hampa@hampa.ch>                   *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -41,6 +41,8 @@
 
 extern unsigned char par_stream[256];
 extern unsigned char par_substream[256];
+extern unsigned char par_stream_map[256];
+extern unsigned char par_substream_map[256];
 extern unsigned char par_invalid[256];
 extern int           par_no_shdr;
 extern int           par_no_pack;

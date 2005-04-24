@@ -5,8 +5,8 @@
 /*****************************************************************************
  * File name:     mpeg_remux.c                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-09-10 by Hampa Hug <hampa@hampa.ch>                   *
- * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
+ * Last modified: 2005-04-24 by Hampa Hug <hampa@hampa.ch>                   *
+ * Copyright:     (C) 2003-2005 Hampa Hug <hampa@hampa.ch>                   *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -127,6 +127,14 @@ int mpeg_remux_packet (mpeg_demux_t *mpeg)
     }
 
     r = 1;
+  }
+
+  if (packet.cnt >= 4) {
+    packet.buf[3] = par_stream_map[sid];
+
+    if ((sid == 0xbd) && (packet.cnt > mpeg->packet.offset)) {
+      packet.buf[mpeg->packet.offset] = par_substream_map[ssid];
+    }
   }
 
   if (mpeg_buf_write_clear (&pack, mpeg_ext_fp (mpeg))) {

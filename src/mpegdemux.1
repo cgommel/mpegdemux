@@ -1,4 +1,4 @@
-.TH MPEGDEMUX 1 "2003-12-30" "HH" "mpegdemux"
+.TH MPEGDEMUX 1 "2005-04-24" "HH" "mpegdemux"
 
 .SH NAME
 mpegdemux \- MPEG1/2 system stream demultiplexer
@@ -107,6 +107,22 @@ is the same as for
 .BR -s .
 \
 .TP
+.BI "-S, --stream-map " "id1 id2"
+Remap stream
+.I id1
+to
+.I id2
+when remuxing.
+\
+.TP
+.BI "-P, --substream-map " "id1 id2"
+Remap substream
+.I id1
+to
+.I id2
+when remuxing.
+\
+.TP
 .BI "-i, --invalid " spec
 Select invalid streams. Packets of invalid streams are not recognized
 as packets and their contents are parsed as MPEG system stream data
@@ -172,7 +188,7 @@ remuxing mode, make sure that there is exactly one end
 code at the end of the stream.
 \
 .TP
-.B -P, --empty-packs
+.B -E, --empty-packs
 When streams are removed during remuxing, packs can become
 empty. Including these empty packs in the output is pointless
 and therefore is not done by default. Use this option to
@@ -244,6 +260,11 @@ $ mpegdemux -r -s all/-0xc1 -p all src.mpg dst.mpg
 Extract the first AC3 audio stream from a DVD MPEG2 system stream:
 
 $ mpegdemux -d -s 0xbd -p 0x80 --ac3 src.mpg dst.ac3
+
+
+Exchange the first and the second audio stream:
+
+$ mpegdemux -r -s all -p all -S 0xc0 0xc1 -S 0xc1 0xc0 src.mpg dst.mpg
 
 .SH SEE ALSO
 .BR mplex "(1)"
