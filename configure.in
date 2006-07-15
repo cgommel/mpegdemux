@@ -5,8 +5,8 @@
 #*****************************************************************************
 #* File name:     configure.in                                               *
 #* Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
-#* Last modified: 2004-01-02 by Hampa Hug <hampa@hampa.ch>                   *
-#* Copyright:     (C) 2003-2004 by Hampa Hug <hampa@hampa.ch>                *
+#* Last modified: 2006-07-15 by Hampa Hug <hampa@hampa.ch>                   *
+#* Copyright:     (C) 2003-2006 by Hampa Hug <hampa@hampa.ch>                *
 #*****************************************************************************
 
 #*****************************************************************************
@@ -139,32 +139,15 @@ dnl Checks for header files.
 AC_HEADER_STDC
 
 
-dnl -----------------------------------------------------------------------
-dnl Checks for libraries
-
-
-AC_CHECK_SIZEOF(long long, 8)
-AC_CHECK_SIZEOF(unsigned long long, 8)
-
-
 AC_OUTPUT(Makefile.inc Makefile src/Makefile)
 
 
 dnl -----------------------------------------------------------------------
 
-eval "mpegdemux_bindir=$bindir"
-eval "mpegdemux_bindir=$mpegdemux_bindir"
-
-eval "mpegdemux_mandir=$mandir"
-eval "mpegdemux_mandir=$mpegdemux_mandir"
-
 echo ""
 echo "mpegdemux $MPEGDEMUX_VERSION_STR is now configured:"
 
-echo "  CC:                    $CC"
-echo "  CFLAGS:                \"$CFLAGS\""
-echo "  LDFLAGS:               \"$LDFLAGS\""
+echo "  CC:                    $CC $CFLAGS"
+echo "  LD:                    $CC $LDFLAGS"
 echo ""
 echo "  prefix:                $prefix"
-echo "  bindir:                $mpegdemux_bindir"
-echo "  mandir:                $mpegdemux_mandir"
