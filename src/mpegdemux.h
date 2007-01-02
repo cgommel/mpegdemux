@@ -48,6 +48,7 @@ extern int           par_no_pack;
 extern int           par_no_packet;
 extern int           par_no_end;
 extern int           par_empty_pack;
+extern int           par_remux_skipped;
 extern int           par_split;
 extern int           par_drop;
 extern int           par_scan;

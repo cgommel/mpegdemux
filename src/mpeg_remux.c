@@ -79,6 +79,20 @@ int mpeg_remux_next_fp (mpeg_demux_t *mpeg)
 }
 
 static
+int mpeg_remux_skip (mpeg_demux_t *mpeg)
+{
+	if (par_remux_skipped == 0) {
+		return (0);
+	}
+
+	if (mpeg_copy (mpeg, (FILE *) mpeg->ext, 1)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
 int mpeg_remux_system_header (mpeg_demux_t *mpeg)
 {
 	if (par_no_shdr && (mpeg->shdr_cnt > 1)) {
@@ -205,11 +219,12 @@ int mpeg_remux (FILE *inp, FILE *out)
 		mpeg->ext = out;
 	}
 
-	mpeg->mpeg_system_header = &mpeg_remux_system_header;
-	mpeg->mpeg_pack = &mpeg_remux_pack;
-	mpeg->mpeg_packet = &mpeg_remux_packet;
-	mpeg->mpeg_packet_check = &mpeg_packet_check;
-	mpeg->mpeg_end = &mpeg_remux_end;
+	mpeg->mpeg_skip = mpeg_remux_skip;
+	mpeg->mpeg_system_header = mpeg_remux_system_header;
+	mpeg->mpeg_pack = mpeg_remux_pack;
+	mpeg->mpeg_packet = mpeg_remux_packet;
+	mpeg->mpeg_packet_check = mpeg_packet_check;
+	mpeg->mpeg_end = mpeg_remux_end;
 
 	mpeg_buf_init (&shdr);
 	mpeg_buf_init (&pack);

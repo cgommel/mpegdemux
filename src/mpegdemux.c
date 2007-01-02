@@ -54,6 +54,7 @@ int             par_no_pack = 0;
 int             par_no_packet = 0;
 int             par_no_end = 0;
 int             par_empty_pack = 0;
+int             par_remux_skipped = 0;
 int             par_split = 0;
 int             par_drop = 1;
 int             par_scan = 0;
@@ -85,6 +86,7 @@ void prt_help (void)
 		"  -k, --no-packs               Don't list packs\n"
 		"  -t, --no-packets             Don't list packets\n"
 		"  -e, --no-end                 Don't list end codes [no]\n"
+		"  -K, --remux-skipped          Copy skipped bytes when remuxing [no]\n"
 		"  -D, --no-drop                Don't drop incomplete packets\n"
 		"  -E, --empty-packs            Remux empty packs [no]\n"
 		"  -F, --first-pts              Print packet with lowest PTS [no]\n"
@@ -504,6 +506,9 @@ int main (int argc, char **argv)
 		}
 		else if (str_isarg (argv[argi], "-k", "--no-packs")) {
 			par_no_pack = 1;
+		}
+		else if (str_isarg (argv[argi], "-K", "--remux-skipped")) {
+			par_remux_skipped = 1;
 		}
 		else if (str_isarg (argv[argi], "-t", "--no-packets")) {
 			par_no_packet = 1;

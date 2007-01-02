@@ -1,4 +1,4 @@
-.TH MPEGDEMUX 1 "2005-04-24" "HH" "mpegdemux"
+.TH MPEGDEMUX 1 "2007-01-02" "HH" "mpegdemux"
 
 .SH NAME
 mpegdemux \- MPEG1/2 system stream demultiplexer
@@ -176,6 +176,10 @@ remuxing mode, don't repeat system headers.
 .TP
 .B -k, --no-packs
 Don't print packs in listing mode.
+\
+.TP
+.B "-K, --remux-skipped"
+Copy bytes that are skipped while looking for a start code.
 \
 .TP
 .B -t, --no-packets
