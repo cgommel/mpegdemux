@@ -106,6 +106,21 @@ void prt_version (void)
 }
 
 static
+char *str_clone (const char *str)
+{
+	char *ret;
+
+	ret = malloc (strlen (str) + 1);
+	if (ret == NULL) {
+		return (NULL);
+	}
+
+	strcpy (ret, str);
+
+	return (ret);
+}
+
+static
 int str_isarg (const char *str, const char *arg1, const char *arg2)
 {
 	if ((arg1 != NULL) && (strcmp (str, arg1) == 0)) {
@@ -440,7 +455,7 @@ int main (int argc, char **argv)
 				free (par_demux_name);
 			}
 
-			par_demux_name = strdup (argv[argi]);
+			par_demux_name = str_clone (argv[argi]);
 		}
 		else if (str_isarg (argv[argi], "-m", "--packet-max-size")) {
 			argi += 1;
