@@ -5,8 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_parse.h                                               *
  * Created:       2003-02-01 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-09-10 by Hampa Hug <hampa@hampa.ch>                   *
- * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:     (C) 2003-2007 Hampa Hug <hampa@hampa.ch>                   *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -20,7 +19,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_parse.h,v 1.14 2003/09/10 17:05:00 hampa Exp $ */
+/* $Id$ */
 
 
 #ifndef MPEG_PARSE_H
@@ -41,70 +40,70 @@
 
 
 typedef struct {
-  unsigned long      packet_cnt;
-  unsigned long long size;
+	unsigned long      packet_cnt;
+	unsigned long long size;
 } mpeg_stream_info_t;
 
 typedef struct {
-  unsigned size;
-  int      fixed;
-  int      csps;
+	unsigned size;
+	int      fixed;
+	int      csps;
 } mpeg_shdr_t;
 
 typedef struct {
-  unsigned           type;
-  unsigned           sid;
-  unsigned           ssid;
-  unsigned           size;
-  unsigned           offset;
+	unsigned           type;
+	unsigned           sid;
+	unsigned           ssid;
+	unsigned           size;
+	unsigned           offset;
 
-  char               have_pts;
-  unsigned long long pts;
+	char               have_pts;
+	unsigned long long pts;
 
-  char               have_dts;
-  unsigned long long dts;
+	char               have_dts;
+	unsigned long long dts;
 } mpeg_packet_t;
 
 typedef struct {
-  unsigned           size;
-  unsigned           type;
-  unsigned long long scr;
-  unsigned long      mux_rate;
-  unsigned           stuff;
+	unsigned           size;
+	unsigned           type;
+	unsigned long long scr;
+	unsigned long      mux_rate;
+	unsigned           stuff;
 } mpeg_pack_t;
 
 typedef struct mpeg_demux_t {
-  int                close;
-  int                free;
+	int                close;
+	int                free;
 
-  FILE               *fp;
+	FILE               *fp;
 
-  unsigned long long ofs;
+	unsigned long long ofs;
 
-  unsigned           buf_i;
-  unsigned           buf_n;
-  unsigned char      buf[MPEG_DEMUX_BUFFER];
+	unsigned           buf_i;
+	unsigned           buf_n;
+	unsigned char      buf[MPEG_DEMUX_BUFFER];
 
-  mpeg_shdr_t        shdr;
-  mpeg_packet_t      packet;
-  mpeg_pack_t        pack;
+	mpeg_shdr_t        shdr;
+	mpeg_packet_t      packet;
+	mpeg_pack_t        pack;
 
-  unsigned long      shdr_cnt;
-  unsigned long      pack_cnt;
-  unsigned long      packet_cnt;
-  unsigned long      end_cnt;
-  unsigned long      skip_cnt;
-  mpeg_stream_info_t streams[256];
-  mpeg_stream_info_t substreams[256];
+	unsigned long      shdr_cnt;
+	unsigned long      pack_cnt;
+	unsigned long      packet_cnt;
+	unsigned long      end_cnt;
+	unsigned long      skip_cnt;
+	mpeg_stream_info_t streams[256];
+	mpeg_stream_info_t substreams[256];
 
-  void               *ext;
+	void               *ext;
 
-  int (*mpeg_skip) (struct mpeg_demux_t *mpeg);
-  int (*mpeg_pack) (struct mpeg_demux_t *mpeg);
-  int (*mpeg_system_header) (struct mpeg_demux_t *mpeg);
-  int (*mpeg_packet) (struct mpeg_demux_t *mpeg);
-  int (*mpeg_packet_check) (struct mpeg_demux_t *mpeg);
-  int (*mpeg_end) (struct mpeg_demux_t *mpeg);
+	int (*mpeg_skip) (struct mpeg_demux_t *mpeg);
+	int (*mpeg_pack) (struct mpeg_demux_t *mpeg);
+	int (*mpeg_system_header) (struct mpeg_demux_t *mpeg);
+	int (*mpeg_packet) (struct mpeg_demux_t *mpeg);
+	int (*mpeg_packet_check) (struct mpeg_demux_t *mpeg);
+	int (*mpeg_end) (struct mpeg_demux_t *mpeg);
 } mpeg_demux_t;
 
 

@@ -5,8 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_remux.h                                               *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:     (C) 2003-2007 Hampa Hug <hampa@hampa.ch>                   *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -20,7 +19,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_remux.h,v 1.2 2003/03/02 11:19:49 hampa Exp $ */
+/* $Id$ */
 
 
 #ifndef MPEGDEMUX_MPEG_REMUX_H

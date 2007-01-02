@@ -5,8 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_scan.h                                                *
  * Created:       2003-02-07 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-03-07 by Hampa Hug <hampa@hampa.ch>                   *
- * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:     (C) 2003-2007 Hampa Hug <hampa@hampa.ch>                   *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -20,7 +19,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_scan.h,v 1.1 2003/03/07 08:15:26 hampa Exp $ */
+/* $Id$ */
 
 
 #ifndef MPEGDEMUX_MPEG_SCAN_H

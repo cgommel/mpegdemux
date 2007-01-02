@@ -5,8 +5,7 @@
 /*****************************************************************************
  * File name:     mpeg_list.c                                                *
  * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Last modified: 2003-09-10 by Hampa Hug <hampa@hampa.ch>                   *
- * Copyright:     (C) 2003 by Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:     (C) 2003-2007 Hampa Hug <hampa@hampa.ch>                   *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -20,7 +19,7 @@
  * Public License for more details.                                          *
  *****************************************************************************/
 
-/* $Id: mpeg_list.c,v 1.15 2003/09/10 17:05:00 hampa Exp $ */
+/* $Id$ */
 
 
 #include "config.h"
@@ -42,179 +41,179 @@ static unsigned long      skip_cnt = 0;
 static
 void mpeg_list_print_skip (FILE *fp)
 {
-  if (skip_cnt > 0) {
-    fprintf (fp, "%08llx: skip %lu\n", skip_ofs, skip_cnt);
+	if (skip_cnt > 0) {
+		fprintf (fp, "%08llx: skip %lu\n", skip_ofs, skip_cnt);
 
-    skip_cnt = 0;
-  }
+		skip_cnt = 0;
+	}
 }
 
 static
 int mpeg_list_skip (mpeg_demux_t *mpeg)
 {
-  if (skip_cnt == 0) {
-    skip_ofs = mpeg->ofs;
-  }
+	if (skip_cnt == 0) {
+		skip_ofs = mpeg->ofs;
+	}
 
-  skip_cnt += 1;
+	skip_cnt += 1;
 
-  return (0);
+	return (0);
 }
 
 static
 int mpeg_list_system_header (mpeg_demux_t *mpeg)
 {
-  FILE *fp;
+	FILE *fp;
 
-  if (par_no_shdr) {
-    return (0);
-  }
+	if (par_no_shdr) {
+		return (0);
+	}
 
-  fp = (FILE *) mpeg->ext;
+	fp = (FILE *) mpeg->ext;
 
-  mpeg_list_print_skip (fp);
+	mpeg_list_print_skip (fp);
 
-  fprintf (fp, "%08llx: system header[%lu]: size=%u fixed=%d csps=%d\n",
-    mpeg->ofs, mpeg->shdr_cnt - 1,
-    mpeg->shdr.size, mpeg->shdr.fixed, mpeg->shdr.csps
-  );
+	fprintf (fp, "%08llx: system header[%lu]: size=%u fixed=%d csps=%d\n",
+		mpeg->ofs, mpeg->shdr_cnt - 1,
+		mpeg->shdr.size, mpeg->shdr.fixed, mpeg->shdr.csps
+	);
 
-  return (0);
+	return (0);
 }
 
 static
 int mpeg_list_packet (mpeg_demux_t *mpeg)
 {
-  FILE     *fp;
-  unsigned sid, ssid;
+	FILE     *fp;
+	unsigned sid, ssid;
 
-  if (par_no_packet) {
-    return (0);
-  }
+	if (par_no_packet) {
+		return (0);
+	}
 
-  sid = mpeg->packet.sid;
-  ssid = mpeg->packet.ssid;
+	sid = mpeg->packet.sid;
+	ssid = mpeg->packet.ssid;
 
-  if (mpeg_stream_excl (sid, ssid)) {
-    return (0);
-  }
+	if (mpeg_stream_excl (sid, ssid)) {
+		return (0);
+	}
 
-  fp = (FILE *) mpeg->ext;
+	fp = (FILE *) mpeg->ext;
 
-  mpeg_list_print_skip (fp);
+	mpeg_list_print_skip (fp);
 
-  fprintf (fp,
-    "%08llx: packet[%lu]: sid=%02x",
-    mpeg->ofs,
-    mpeg->streams[sid].packet_cnt - 1,
-    sid
-  );
+	fprintf (fp,
+		"%08llx: packet[%lu]: sid=%02x",
+		mpeg->ofs,
+		mpeg->streams[sid].packet_cnt - 1,
+		sid
+	);
 
-  if (sid == 0xbd) {
-    fprintf (fp, "[%02x]", ssid);
-  }
-  else {
-    fputs ("    ", fp);
-  }
+	if (sid == 0xbd) {
+		fprintf (fp, "[%02x]", ssid);
+	}
+	else {
+		fputs ("    ", fp);
+	}
 
-  if (mpeg->packet.type == 1) {
-    fputs (" MPEG1", fp);
-  }
-  else if (mpeg->packet.type == 2) {
-    fputs (" MPEG2", fp);
-  }
-  else {
-    fputs (" UNKWN", fp);
-  }
+	if (mpeg->packet.type == 1) {
+		fputs (" MPEG1", fp);
+	}
+	else if (mpeg->packet.type == 2) {
+		fputs (" MPEG2", fp);
+	}
+	else {
+		fputs (" UNKWN", fp);
+	}
 
-  fprintf (fp, " size=%u", mpeg->packet.size);
+	fprintf (fp, " size=%u", mpeg->packet.size);
 
-  if (mpeg->packet.have_pts || mpeg->packet.have_dts) {
-    fprintf (fp,
-      " pts=%llu[%.4f] dts=%llu[%.4f]",
-      mpeg->packet.pts, (double) mpeg->packet.pts / 90000.0,
-      mpeg->packet.dts, (double) mpeg->packet.dts / 90000.0
-    );
-  }
+	if (mpeg->packet.have_pts || mpeg->packet.have_dts) {
+		fprintf (fp,
+			" pts=%llu[%.4f] dts=%llu[%.4f]",
+			mpeg->packet.pts, (double) mpeg->packet.pts / 90000.0,
+			mpeg->packet.dts, (double) mpeg->packet.dts / 90000.0
+		);
+	}
 
-  fputs ("\n", fp);
+	fputs ("\n", fp);
 
-  return (0);
+	return (0);
 }
 
 static
 int mpeg_list_pack (mpeg_demux_t *mpeg)
 {
-  FILE *fp;
+	FILE *fp;
 
-  if (par_no_pack) {
-    return (0);
-  }
+	if (par_no_pack) {
+		return (0);
+	}
 
-  fp = (FILE *) mpeg->ext;
+	fp = (FILE *) mpeg->ext;
 
-  mpeg_list_print_skip (fp);
+	mpeg_list_print_skip (fp);
 
-  fprintf (fp, "%08llx: pack[%lu]: type=%u scr=%llu[%.4f] mux=%lu[%.2f] stuff=%u\n",
-    mpeg->ofs, mpeg->pack_cnt - 1,
-    mpeg->pack.type,
-    mpeg->pack.scr, (double) mpeg->pack.scr / 90000.0,
-    mpeg->pack.mux_rate, 50.0 * mpeg->pack.mux_rate,
-    mpeg->pack.stuff
-  );
+	fprintf (fp, "%08llx: pack[%lu]: type=%u scr=%llu[%.4f] mux=%lu[%.2f] stuff=%u\n",
+		mpeg->ofs, mpeg->pack_cnt - 1,
+		mpeg->pack.type,
+		mpeg->pack.scr, (double) mpeg->pack.scr / 90000.0,
+		mpeg->pack.mux_rate, 50.0 * mpeg->pack.mux_rate,
+		mpeg->pack.stuff
+	);
 
-  fflush (fp);
+	fflush (fp);
 
-  return (0);
+	return (0);
 }
 
 static
 int mpeg_list_end (mpeg_demux_t *mpeg)
 {
-  FILE *fp;
+	FILE *fp;
 
-  if (par_no_end) {
-    return (0);
-  }
+	if (par_no_end) {
+		return (0);
+	}
 
-  fp = (FILE *) mpeg->ext;
+	fp = (FILE *) mpeg->ext;
 
-  mpeg_list_print_skip (fp);
+	mpeg_list_print_skip (fp);
 
-  fprintf (fp, "%08llx: end\n", mpeg->ofs);
+	fprintf (fp, "%08llx: end\n", mpeg->ofs);
 
-  return (0);
+	return (0);
 }
 
 int mpeg_list (FILE *inp, FILE *out)
 {
-  int          r;
-  mpeg_demux_t *mpeg;
+	int          r;
+	mpeg_demux_t *mpeg;
 
-  mpeg = mpegd_open_fp (NULL, inp, 0);
-  if (mpeg == NULL) {
-    return (1);
-  }
+	mpeg = mpegd_open_fp (NULL, inp, 0);
+	if (mpeg == NULL) {
+		return (1);
+	}
 
-  skip_cnt = 0;
-  skip_ofs = 0;
+	skip_cnt = 0;
+	skip_ofs = 0;
 
-  mpeg->ext = out;
+	mpeg->ext = out;
 
-  mpeg->mpeg_skip = &mpeg_list_skip;
-  mpeg->mpeg_system_header = &mpeg_list_system_header;
-  mpeg->mpeg_pack = &mpeg_list_pack;
-  mpeg->mpeg_packet = &mpeg_list_packet;
-  mpeg->mpeg_packet_check = &mpeg_packet_check;
-  mpeg->mpeg_end = &mpeg_list_end;
+	mpeg->mpeg_skip = &mpeg_list_skip;
+	mpeg->mpeg_system_header = &mpeg_list_system_header;
+	mpeg->mpeg_pack = &mpeg_list_pack;
+	mpeg->mpeg_packet = &mpeg_list_packet;
+	mpeg->mpeg_packet_check = &mpeg_packet_check;
+	mpeg->mpeg_end = &mpeg_list_end;
 
-  r = mpegd_parse (mpeg);
+	r = mpegd_parse (mpeg);
 
-  mpeg_list_print_skip (out);
+	mpeg_list_print_skip (out);
 
-  mpeg_print_stats (mpeg, out);
+	mpeg_print_stats (mpeg, out);
 
-  mpegd_close (mpeg);
+	mpegd_close (mpeg);
 
-  return (r);
+	return (r);
 }
