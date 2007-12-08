@@ -44,7 +44,7 @@ clean:
 
 install:
 	$(INSTALL) -d -m 755 $(bindir)
-	$(INSTALL) -m 755 -s $(BIN) $(bindir)
+	$(INSTALL_PROGRAM) -m 755 $(BIN) $(bindir)
 	$(INSTALL) -d -m 755 $(mandir)/man1
 	$(INSTALL) -m 644 $(srcdir)/mpegdemux.1 $(mandir)/man1
 
