@@ -212,7 +212,9 @@ also list the packet with the lowest presentation time stamp.
 AC3 sound packets in DVD MPEG2 streams have a 3 byte header
 that is neither part of the MPEG specification nor of the
 AC3 specification. When this option is used, these 3 bytes
-are removed to produce a correct AC3 stream.
+are removed to produce a correct AC3 stream. Note that this
+option applies to all selected substreams without checking
+whether they actually contain an AC3 elementary stream.
 \
 .TP
 .B -u, --spu
@@ -220,7 +222,8 @@ This option is used to extract DVD subtitles. It is necessary
 because the subtitle streams on DVD don't contain all the
 timing information (the time stamps in the packet headers
 are required). If this option is used during demultiplexing,
-the output file is written in the following format:
+the output files for all substreams are written in the
+following format:
 
 "SPU " (4 bytes)
 
