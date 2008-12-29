@@ -3,9 +3,9 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * File name:     mpeg_demux.c                                               *
- * Created:       2003-02-02 by Hampa Hug <hampa@hampa.ch>                   *
- * Copyright:     (C) 2003-2007 Hampa Hug <hampa@hampa.ch>                   *
+ * File name:   mpeg_demux.c                                                 *
+ * Created:     2003-02-02 by Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2008 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -172,6 +172,14 @@ int mpeg_demux_packet (mpeg_demux_t *mpeg)
 		if (par_dvdac3) {
 			cnt += 3;
 		}
+	}
+
+	if (cnt > mpeg->packet.size) {
+		prt_msg ("demux: AC3 packet too small (sid=%02x size=%u)\n",
+			sid, mpeg->packet.size
+		);
+
+		return (1);
 	}
 
 	if (fp[fpi] == NULL) {
