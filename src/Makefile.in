@@ -5,8 +5,6 @@ topdir := @top_srcdir@
 subdir :=
 reldir := ..
 
-include $(reldir)/Makefile.inc
-
 
 SRC	:= buffer.c message.c mpegdemux.c mpeg_demux.c mpeg_list.c \
 	mpeg_parse.c mpeg_remux.c mpeg_scan.c
@@ -16,7 +14,7 @@ OBJ	:= buffer.o message.o mpegdemux.o mpeg_demux.o mpeg_list.o \
 
 OBJ_EXT	:=
 
-HDR	:= buffer.h config.h message.h mpegdemux.h mpeg_demux.h mpeg_list.h \
+HDR	:= buffer.h message.h mpegdemux.h mpeg_demux.h mpeg_list.h \
 	mpeg_parse.h mpeg_remux.h mpeg_scan.h
 
 HDR_EXT	:=
@@ -25,8 +23,13 @@ MAN	:= mpegdemux.1
 
 BIN	:= mpegdemux
 
-SDP	:= Makefile $(HDR) $(HDR_EXT)
+SDP	:= Makefile $(HDR) $(HDR_EXT) config.h
 BDP	:= Makefile $(OBJ) $(OBJ_EXT)
+
+DIST	:= $(SRC) $(HDR) $(MAN) Makefile.in config.h.in
+
+
+include $(reldir)/Makefile.inc
 
 
 all: $(BIN)

@@ -35,16 +35,12 @@ if test ! -r "$srcdir/version" ; then
 	AC_MSG_RESULT([file 'version' not found in source directory])
 	exit 1
 fi
-oldifs=$IFS
-IFS="$IFS."
+
 read p MPEGDEMUX_VERSION_MAJ MPEGDEMUX_VERSION_MIN MPEGDEMUX_VERSION_MIC dstr r < "$srcdir/version"
-IFS=$oldifs
+
 if test "x$dstr" != "x" ; then
 	MPEGDEMUX_VERSION_REL=0
-	if test "x$dstr" = "xcvs" ; then
-		dstr=`date +%Y%m%d`
-		MPEGDEMUX_VERSION_STR="cvs-$dstr"
-	elif test "x$dstr" = "xsvn" ; then
+	if test "x$dstr" = "xsvn" ; then
 		tmp=svninfo.$$.tmp
 		svn info "$srcdir" > "$tmp" 2> /dev/null
 

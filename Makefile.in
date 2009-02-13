@@ -5,7 +5,34 @@ topdir := @top_srcdir@
 subdir := src
 reldir := .
 
+
+DIST := AUTHORS \
+	COPYING \
+	ChangeLog \
+	INSTALL \
+	Makefile.in \
+	Makefile.inc.in \
+	NEWS \
+	README \
+	TODO \
+	autogen.sh \
+	configure \
+	configure.in \
+	install-sh
+
+
 include $(reldir)/Makefile.inc
 
 
 all:
+
+
+dist:
+	$(QP)echo "  GEN    version"
+	$(QR)echo "mpegdemux  $(MPEGDEMUX_VERSION_MAJ) $(MPEGDEMUX_VERSION_MIN) $(MPEGDEMUX_VERSION_MIC)  $(MPEGDEMUX_VERSION_STR)" \
+		> "$(distdir)/version"
+	$(QP)echo "  TAR    $(distdir).tar"
+	$(QR)( cd "$(distdir)"/.. && \
+		tar -cvf "$(distdir).tar" `basename "$(distdir)"` > /dev/null )
+	$(QP)echo "  GZIP   $(distdir).tar.gz"
+	$(QR)gzip -9 "$(distdir).tar"
