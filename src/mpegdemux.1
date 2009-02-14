@@ -1,4 +1,4 @@
-.TH MPEGDEMUX 1 "2007-01-02" "HH" "mpegdemux"
+.TH MPEGDEMUX 1 "2009-02-13" "HH" "mpegdemux"
 
 .SH NAME
 mpegdemux \- MPEG1/2 system stream demultiplexer
@@ -6,12 +6,7 @@ mpegdemux \- MPEG1/2 system stream demultiplexer
 .SH SYNOPSIS
 .BI mpegdemux " [options] [input [output]]"
 
-.BI mpegdemux " --help"
-
-.BI mpegdemux " --version"
-
 .SH DESCRIPTION
-
 .BR mpegdemux (1)
 is an MPEG1/MPEG2 system stream demultiplexer. It can be
 used to list the contents of an MPEG system stream and to extract
@@ -42,114 +37,20 @@ an MPEG system stream with all but the selected elementary
 streams removed.
 
 .SH OPTIONS
-
 .TP
-.B --help
-Print usage information
-\
-.TP
-.B --version
-Print version information
-\
-.TP
-.B -c --scan
-Scan a system stream for elementary streams. This is the default
-mode. All streams and substreams are automatically selected when
-using this option.
-\
-.TP
-.B -l, --list
-List the system headers, packs and packets in an MPEG system stream.
-\
-.TP
-.B -d, --demux
-Demultiplex an MPEG system stream. The demultiplexed streams are
-written to the output file unless the
-.B --base-name
-option is used. If the
-.B --base-name
-option is not used, only one stream can be demultiplexed (if more
-streams are specified, they will be randomly interleaved in the
-output file).
-\
-.TP
-.B -r, --remux
-Remultiplex an MPEG system stream. The output MPEG system stream
-is written to the output file. Many options control what is
-copied from the input to the output and what is discarded.
-\
-.TP
-.BI "-s, --streams " spec
-This option selects streams.
-.I spec
-specifies the stream IDs in the following form:
-
-[+|-]<id>[-<id>]{/[+|-]<id>[-<id>]}
-
-where id is either a numeric stream ID or one of
-.BR all " or " none.
-A "-" in front of an ID range means exclusion. For example the spec
-
--s 0xc0-0xcf/-0xc2
-
-selects all video streams (0xc0 - 0xcf) except stream 0xc2.
-\
-.TP
-.BI "-p, --substream " spec
-This option selects private substreams. Whenever Private Stream 1
-(0xbd) is selected using
-.BR -s ,
-the substreams within that private stream can be selected using
-.BR -p .
-The syntax for
-.I spec
-is the same as for
-.BR -s .
-\
-.TP
-.BI "-S, --stream-map " "id1 id2"
-Remap stream
-.I id1
-to
-.I id2
-when remuxing.
-\
-.TP
-.BI "-P, --substream-map " "id1 id2"
-Remap substream
-.I id1
-to
-.I id2
-when remuxing.
-\
-.TP
-.BI "-i, --invalid " spec
-Select invalid streams. Packets of invalid streams are not recognized
-as packets and their contents are parsed as MPEG system stream data
-rather than being skipped. This is useful for broken/incomplete
-streams. The syntax for
-.I spec
-is the same as for
-.BR -s .
-Additionally, if
-.I spec
-is "-" then all streams that have not yet been selected by
-.B -s
-are made invalid.
-\
-.TP
-.BI "-m, --packet-max-size " int
-Set the maximum packet size. Packets in the input stream that are
-larger are considered invalid. As with the
-.B -i
-option, the packet is not simply skipped but parsed as MPEG
-system stream data.
+.B -a, --ac3
+AC3 sound packets in DVD MPEG2 streams have a 3 byte header
+that is neither part of the MPEG specification nor of the
+AC3 specification. When this option is used, these 3 bytes
+are removed to produce a correct AC3 stream. Note that this
+option applies to all selected substreams without checking
+whether they actually contain an AC3 elementary stream.
 \
 .TP
 .BI "-b, --base-name " name
 When demultiplexing more than one stream, the output file names
 can be set using this option. To generate the output file name
-for a stream, every # character in name is replaced by
+for a stream, every # character in \fIname\fR is replaced by
 a hex digit of the stream id. For example, to extract all
 video streams in one go, use something like
 
@@ -158,32 +59,22 @@ $ mpegdemux -d -b video_##.m1v -s 0xc0-0xcf src.mpg
 to get files video_c0.m1v, video_c1.m1v, ...
 \
 .TP
-.B -x, --split
-Split the remuxed stream at sequence boundaries. This option is
-only meaningful in remuxing mode. It can not be used together
-with the
-.B -e
-option. The individual sequences are written to
-files whose name was set with the
-.B -b
-option.
+.B -c --scan
+Scan a system stream for elementary streams. This is the default
+mode. All streams and substreams are automatically selected when
+using this option.
 \
 .TP
-.B -h, --no-system-headers
-Don't print system headers in listing mode. Additionally, in
-remuxing mode, don't repeat system headers.
+.B -d, --demux
+Demultiplex an MPEG system stream. The demultiplexed streams are
+written to the output file unless the \fB--base-name\fR option is
+used. If the \fB--base-name\fR option is not used, only one stream
+can be demultiplexed (if more streams are specified, they will be
+randomly interleaved in the output file).
 \
 .TP
-.B -k, --no-packs
-Don't print packs in listing mode.
-\
-.TP
-.B "-K, --remux-skipped"
-Copy bytes that are skipped while looking for a start code.
-\
-.TP
-.B -t, --no-packets
-Don't print packets in listing mode.
+.B -D, --no-drop
+Don't drop incomplete packets in demuxing and remuxing mode.
 \
 .TP
 .B -e, --no-end
@@ -199,22 +90,81 @@ and therefore is not done by default. Use this option to
 force inclusion of all packs.
 \
 .TP
-.B -D, --no-drop
-Don't drop incomplete packets in demuxing and remuxing mode.
-\
-.TP
 .B -F, --first-pts
 In scan mode, in addition to each stream's first packet,
 also list the packet with the lowest presentation time stamp.
 \
 .TP
-.B -a, --ac3
-AC3 sound packets in DVD MPEG2 streams have a 3 byte header
-that is neither part of the MPEG specification nor of the
-AC3 specification. When this option is used, these 3 bytes
-are removed to produce a correct AC3 stream. Note that this
-option applies to all selected substreams without checking
-whether they actually contain an AC3 elementary stream.
+.B -h, --no-system-headers
+Don't print system headers in listing mode. Additionally, in
+remuxing mode, don't repeat system headers.
+\
+.TP
+.BI "-i, --invalid " spec
+Select invalid streams. Packets of invalid streams are not recognized
+as packets and their contents are parsed as MPEG system stream data
+rather than being skipped. This is useful for broken/incomplete
+streams. The syntax for \fIspec\fR is the same as for \fB-s\fR.
+Additionally, if \fIspec\fR is "-" then all streams that have not yet
+been selected by \fB-s\fR are made invalid.
+\
+.TP
+.B -k, --no-packs
+Don't print packs in listing mode.
+\
+.TP
+.B "-K, --remux-skipped"
+Copy bytes that are skipped while looking for a start code.
+\
+.TP
+.B -l, --list
+List the system headers, packs and packets in an MPEG system stream.
+\
+.TP
+.BI "-m, --packet-max-size " size
+Set the maximum packet size to \fIsize\fR. Packets in the input stream
+that are larger are considered invalid. As with the \fB-i\fR option,
+the packet is not simply skipped but parsed as MPEG system stream data.
+\
+.TP
+.BI "-p, --substream " spec
+This option selects private substreams. Whenever Private Stream 1
+(0xbd) is selected using \fB-s\fR, the substreams within that private
+stream can be selected using \fB-p\fR. The syntax for \fIspec\fR is
+the same as for \fB-s\fR.
+\
+.TP
+.BI "-P, --substream-map " "id1 id2"
+Remap substream \fIid1\fR to \fIid2\fR when remuxing.
+\
+.TP
+.B -r, --remux
+Remultiplex an MPEG system stream. The output MPEG system stream
+is written to the output file. Many options control what is
+copied from the input to the output and what is discarded.
+\
+.TP
+.BI "-s, --streams " spec
+This option selects streams. \fIspec\fR specifies the stream IDs in
+the following form:
+
+[+|-]<id>[-<id>]{/[+|-]<id>[-<id>]}
+
+where id is either a numeric stream ID or one of \fBall\fR or
+\fBnone\fR. A "-" in front of an ID range means exclusion. For example
+the spec
+
+-s 0xc0-0xcf/-0xc2
+
+selects all video streams (0xc0 - 0xcf) except stream 0xc2.
+\
+.TP
+.BI "-S, --stream-map " "id1 id2"
+Remap stream \fIid1\fR to \fIid2\fR when remuxing.
+\
+.TP
+.B -t, --no-packets
+Don't print packets in listing mode.
 \
 .TP
 .B -u, --spu
@@ -236,6 +186,21 @@ PTS (8 bytes)
 SPU packet
 
 and so on
+\
+.TP
+.B -x, --split
+Split the remuxed stream at sequence boundaries. This option is
+only meaningful in remuxing mode. It can not be used together
+with the \fB-e\fR option. The individual sequences are written to
+files whose name was set with the \fB-b\fR option.
+\
+.TP
+.B --help
+Print usage information
+\
+.TP
+.B --version
+Print version information
 
 .SH EXAMPLES
 
