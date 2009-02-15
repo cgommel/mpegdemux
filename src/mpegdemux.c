@@ -99,8 +99,8 @@ void prt_version (void)
 {
 	fputs (
 		"mpegdemux version " MPEGDEMUX_VERSION_STR
-		" (compiled " MPEGDEMUX_CFG_DATE " " MPEGDEMUX_CFG_TIME ")\n\n"
-		"Copyright (C) 2003-2007 Hampa Hug <hampa@hampa.ch>\n",
+		"\n\n"
+		"Copyright (C) 2003-2009 Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 }
