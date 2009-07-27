@@ -1,135 +1,63 @@
-# Makefile include file
+# Makefile.inc
 
-#--------------------------------------------------------------------------
-# user editable section
+etcdir      = @sysconfdir@
+datarootdir = @datarootdir@
+datadir     = @datadir@
 
-prefix  	= @prefix@
-exec_prefix	= @exec_prefix@
-bindir		= @bindir@
-libdir		= @libdir@
-incdir		= @includedir@
-mandir		= @mandir@
-datarootdir	= @datarootdir@
+CC   = @CC@
+LD   = @CC@
+LN_S = @LN_S@
 
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL@
 
-ifeq "$(V)" "1"
-QP = @\#
-QR =
-else
-QP = @
-QR = @
+CFLAGS         = @CFLAGS@
+CFLAGS_DEFAULT = $(CFLAGS) -Isrc
+
+LDFLAGS         = @LDFLAGS@
+LDFLAGS_DEFAULT = $(LDFLAGS)
+
+LIBS = @LIBS@
+
+ifneq "$(srcdir)" "."
+CFLAGS_DEFAULT += -I$(srcdir)/src
 endif
-
-
-# Executables
-
-CC		= @CC@
-CFLAGS		= @CFLAGS@
-CC_FLG		= $(CFLAGS) -I$(topdir)/src -I$(reldir)/src
-
-LD              = @CC@
-LDFLAGS		= @LDFLAGS@
-LD_FLG          = $(LDFLAGS)
-
-AR		= @AR@
-AR_FLG		= -rs
-
-LN_S		= @LN_S@
-LN_S_FLG	= -f
-
-INSTALL		= @INSTALL@
-INSTALL_PROGRAM	= @INSTALL@
-
-@SET_MAKE@
-MAKE_FLG	=
-
-
-# end of user editable section
-#--------------------------------------------------------------------------
 
 MPEGDEMUX_VERSION_MAJ := @MPEGDEMUX_VERSION_MAJ@
 MPEGDEMUX_VERSION_MIN := @MPEGDEMUX_VERSION_MIN@
 MPEGDEMUX_VERSION_MIC := @MPEGDEMUX_VERSION_MIC@
 MPEGDEMUX_VERSION_STR := @MPEGDEMUX_VERSION_STR@
-MPEGDEMUX_VERSION_REL := @MPEGDEMUX_VERSION_REL@
 
-MPEGDEMUX_CFG_TIME := @MPEGDEMUX_CFG_TIME@
-MPEGDEMUX_CFG_DATE := @MPEGDEMUX_CFG_DATE@
+distdir := mpegdemux-$(MPEGDEMUX_VERSION_STR)
 
+# ----------------------------------------------------------------------
 
-VPATH = $(srcdir)
+DCL += Makefile Makefile.inc configure config.log config.status
 
+DIST += AUTHORS COPYING ChangeLog INSTALL \
+	Makefile.in Makefile.inc.in \
+	NEWS README TODO autogen.sh \
+	configure configure.in install-sh
 
-ifeq "$(distdir)" ""
-	distdir := $(PWD)/mpegdemux-$(MPEGDEMUX_VERSION_STR)
-endif
-ifeq "$(distbase)" ""
-	distbase := $(distdir)
-endif
+# ----------------------------------------------------------------------
 
+include $(srcdir)/src/Makefile.inc
 
-ifneq "$(dstdir)" "$(topdir)"
-CC_FLG	+= -I$(topdir)/src
-endif
+TARGETS += $(BIN) $(BINS) $(ETC) $(SHARE)
 
+# ----------------------------------------------------------------------
 
-all: subdirs
+%: %.sh
+	$(QP)echo "  SED    $@"
+	$(QR)rm -f $@
+	$(QR)sed -e "s/%MPEGDEMUX_VERSION_STR/$(MPEGDEMUX_VERSION_STR)/g" < $< > $@
+	$(QR)chmod a+x $@
 
+install-extra:
 
-subdirs: subdirs-rec
-subdirs-rec:
-ifneq "$(subdir)" ""
-	@for dir in $(subdir); do \
-		(cd $$dir && $(MAKE) $(MAKE_FLG)); \
-	done
-endif
+dist-extra:
 
-
-clean: clean-rec
-clean-rec:
-ifneq "$(subdir)" ""
-	@for dir in $(subdir); do \
-		(cd $$dir && $(MAKE) $(MAKE_FLG) clean); \
-	done
-endif
-
-
-install: install-rec
-install-rec:
-ifneq "$(subdir)" ""
-	@for dir in $(subdir); do \
-		(cd $$dir && $(MAKE) $(MAKE_FLG) install); \
-	done
-endif
-
-
-dist: dist-rec dist-default
-dist-default:
-ifneq "$(DIST)" ""
-	$(QP)echo "  MKDIR  $(distdir)"
-	$(QR)mkdir -p "$(distdir)"
-	$(QR)for f in $(DIST) ; do \
-		if test -f "$$f" ; then \
-			src=$$f ; \
-		elif test -f "$(srcdir)/$$f" ; then \
-			src=$(srcdir)/$$f ; \
-		else \
-			continue ; \
-		fi ; \
-		if test x$(V) != x1 ; then echo "  CP     $$f" ; fi ; \
-		cp -p "$$src" "$(distdir)" ; \
-	done
-endif
-
-dist-rec:
-ifneq "$(subdir)" ""
-	$(QR)for dir in $(subdir); do \
-		$(MAKE) -C $$dir $(MAKE_FLG) \
-		distbase=$(distbase) distdir=$(distdir)/$$dir dist || exit 1 ; \
-	done
-endif
-
-
-%.o: %.c
-	$(QP)echo "  CC     $@"
-	$(QR)$(CC) -c $(CC_FLG) -o $@ $<
+dist-version:
+	$(QP)echo "  GEN    version"
+	$(QR)echo "mpegdemux  $(MPEGDEMUX_VERSION_MAJ) $(MPEGDEMUX_VERSION_MIN) $(MPEGDEMUX_VERSION_MIC)  $(MPEGDEMUX_VERSION_STR)" \
+		> "$(distdir)/version"

@@ -5,7 +5,7 @@
 #*****************************************************************************
 #* File name:   configure.in                                                 *
 #* Created:     2003-02-01 by Hampa Hug <hampa@hampa.ch>                     *
-#* Copyright:   (C) 2003-2009 by Hampa Hug <hampa@hampa.ch>                  *
+#* Copyright:   (C) 2003-2009 Hampa Hug <hampa@hampa.ch>                     *
 #*****************************************************************************
 
 #*****************************************************************************
@@ -30,7 +30,7 @@ AC_CONFIG_HEADER(src/config.h)
 #-----------------------------------------------------------------------------
 # package version
 
-AC_MSG_CHECKING([mpegdemux version])
+AC_MSG_CHECKING([package version])
 if test ! -r "$srcdir/version" ; then
 	AC_MSG_RESULT([file 'version' not found in source directory])
 	exit 1
@@ -38,13 +38,14 @@ fi
 
 read p MPEGDEMUX_VERSION_MAJ MPEGDEMUX_VERSION_MIN MPEGDEMUX_VERSION_MIC dstr r < "$srcdir/version"
 
-if test "x$dstr" != "x" ; then
-	MPEGDEMUX_VERSION_REL=0
-	if test "x$dstr" = "xsvn" ; then
+MPEGDEMUX_VERSION_STR=$dstr
+
+if test "x$dstr" = "xscm" ; then
+	if test -d "$srcdir/.svn" ; then
 		tmp=svninfo.$$.tmp
 		svn info "$srcdir" > "$tmp" 2> /dev/null
 
-		date=$(date "+%Y-%m-%d")
+		date=`date "+%Y-%m-%d"`
 		rev=""
 
 		while read a b c d e ; do
@@ -61,40 +62,34 @@ if test "x$dstr" != "x" ; then
 		rm -f "$tmp"
 
 		test -n "$rev" && rev="-r$rev"
-		date=$(echo "$date" | sed -e "s/-//g")
-		MPEGDEMUX_VERSION_STR="$date$rev"
-	else
-		MPEGDEMUX_VERSION_STR="$dstr"
+		date=`echo "$date" | sed -e "s/-//g"`
+		MPEGDEMUX_VERSION_STR="svn-$date$rev"
+	elif test -d "$srcdir/.git" ; then
+		tmp=gitlog.$$.tmp
+		( cd "$srcdir" && git log -1 --date=iso --pretty="format:%h %cd" HEAD ) > "$tmp" 2> /dev/null
+		read hash date time rest < "$tmp"
+		rm -f "$tmp"
+		if test -n "$date" -a -n "$hash" ; then
+			date=`echo "$date" | sed -e "s/-//g"`
+			MPEGDEMUX_VERSION_STR="git-$date-$hash"
+		fi
 	fi
-else
-	MPEGDEMUX_VERSION_REL=1
+elif test "x$dstr" = "x" ; then
 	MPEGDEMUX_VERSION_STR="$MPEGDEMUX_VERSION_MAJ.$MPEGDEMUX_VERSION_MIN.$MPEGDEMUX_VERSION_MIC"
 fi
 AC_SUBST(MPEGDEMUX_VERSION_MAJ)
 AC_SUBST(MPEGDEMUX_VERSION_MIN)
 AC_SUBST(MPEGDEMUX_VERSION_MIC)
 AC_SUBST(MPEGDEMUX_VERSION_STR)
-AC_SUBST(MPEGDEMUX_VERSION_REL)
 AC_DEFINE_UNQUOTED(MPEGDEMUX_VERSION_MAJ, $MPEGDEMUX_VERSION_MAJ)
 AC_DEFINE_UNQUOTED(MPEGDEMUX_VERSION_MIN, $MPEGDEMUX_VERSION_MIN)
 AC_DEFINE_UNQUOTED(MPEGDEMUX_VERSION_MIC, $MPEGDEMUX_VERSION_MIC)
 AC_DEFINE_UNQUOTED(MPEGDEMUX_VERSION_STR, "$MPEGDEMUX_VERSION_STR")
-AC_DEFINE_UNQUOTED(MPEGDEMUX_VERSION_REL, $MPEGDEMUX_VERSION_REL)
-AC_MSG_RESULT([$MPEGDEMUX_VERSION_STR])
+AC_MSG_RESULT([$MPEGDEMUX_VERSION_STR ($MPEGDEMUX_VERSION_MAJ.$MPEGDEMUX_VERSION_MIN.$MPEGDEMUX_VERSION_MIC)])
 
 
-dnl -----------------------------------------------------------------------
-
-MPEGDEMUX_CFG_DATE=`date +%Y-%m-%d`
-MPEGDEMUX_CFG_TIME=`date +%T`
-AC_SUBST(MPEGDEMUX_CFG_DATE)
-AC_SUBST(MPEGDEMUX_CFG_TIME)
-AC_DEFINE_UNQUOTED(MPEGDEMUX_CFG_DATE, "$MPEGDEMUX_CFG_DATE")
-AC_DEFINE_UNQUOTED(MPEGDEMUX_CFG_TIME, "$MPEGDEMUX_CFG_TIME")
-
-
-dnl -----------------------------------------------------------------------
-dnl Checks for programs.
+#-----------------------------------------------------------------------------
+# programs
 
 AC_PROG_CC
 AC_PROG_INSTALL
@@ -106,37 +101,42 @@ case "$INSTALL" in
 	;;
 esac
 AC_PATH_PROG(AR, ar, ar)
+AC_PROG_RANLIB
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
 
 
-dnl --------------------------------------------------------------------------
-dnl Checks for arguments
+#-----------------------------------------------------------------------------
+# arguments
 
 AC_ARG_ENABLE(largefile,
-  AC_HELP_STRING([--disable-largefile], [Disable large file support]),
-  opt_large=$enableval
+	AC_HELP_STRING([--disable-largefile], [Disable large file support]),
+	opt_large=$enableval
 )
 
 if test "$opt_large" = "no" ; then
-	MPEGDEMUX_LARGE_FILE="no"
+	MPEGDEMUX_LARGE_FILE=0
 else
 	AC_DEFINE(MPEGDEMUX_LARGE_FILE)
-	MPEGDEMUX_LARGE_FILE="yes"
+	MPEGDEMUX_LARGE_FILE=1
 fi
 AC_SUBST(MPEGDEMUX_LARGE_FILE)
 
 
-dnl -----------------------------------------------------------------------
-dnl Checks for header files.
+#-----------------------------------------------------------------------------
+# header files
 
 AC_HEADER_STDC
 
 
-AC_OUTPUT(Makefile.inc Makefile src/Makefile)
+#-----------------------------------------------------------------------------
+# output
+
+AC_OUTPUT(Makefile Makefile.inc)
 
 
-dnl -----------------------------------------------------------------------
+#-----------------------------------------------------------------------------
+# status
 
 echo ""
 echo "mpegdemux $MPEGDEMUX_VERSION_STR is now configured:"
