@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/mpeg_demux.c                                             *
  * Created:     2003-02-02 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2009 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2010 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -49,7 +49,11 @@ int mpeg_demux_copy_spu (mpeg_demux_t *mpeg, FILE *fp, unsigned cnt)
 
 	if (half) {
 		mpegd_read (mpeg, buf, 1);
-		fwrite (buf, 1, 1, fp);
+
+		if (fwrite (buf, 1, 1, fp) != 1) {
+			return (1);
+		}
+
 		spucnt = (spucnt << 8) + buf[0];
 		half = 0;
 
@@ -64,20 +68,32 @@ int mpeg_demux_copy_spu (mpeg_demux_t *mpeg, FILE *fp, unsigned cnt)
 				buf[7 - i] = pts & 0xff;
 				pts = pts >> 8;
 			}
-			fwrite (buf, 1, 8, fp);
+
+			if (fwrite (buf, 1, 8, fp) != 8) {
+				return (1);
+			}
 
 			if (cnt == 1) {
 				mpegd_read (mpeg, buf, 1);
-				fwrite (buf, 1, 1, fp);
+
+				if (fwrite (buf, 1, 1, fp) != 1) {
+					return (1);
+				}
+
 				spucnt = buf[0];
 				half = 1;
+
 				return (0);
 			}
 
 			mpegd_read (mpeg, buf, 2);
-			fwrite (buf, 1, 2, fp);
+
+			if (fwrite (buf, 1, 2, fp) != 2) {
+				return (1);
+			}
 
 			spucnt = (buf[0] << 8) + buf[1];
+
 			if (spucnt < 2) {
 				return (1);
 			}
@@ -131,7 +147,10 @@ FILE *mpeg_demux_open (mpeg_demux_t *mpeg, unsigned sid, unsigned ssid)
 	}
 
 	if ((sid == 0xbd) && par_dvdsub) {
-		fwrite ("SPU ", 1, 4, fp);
+		if (fwrite ("SPU ", 1, 4, fp) != 4) {
+			fclose (fp);
+			return (NULL);
+		}
 	}
 
 	return (fp);

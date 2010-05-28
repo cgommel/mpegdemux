@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/mpeg_remux.c                                             *
  * Created:     2003-02-02 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2009 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2010 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -238,7 +238,9 @@ int mpeg_remux (FILE *inp, FILE *out)
 		buf[2] = (MPEG_END_CODE >> 8) & 0xff;
 		buf[3] = MPEG_END_CODE & 0xff;
 
-		fwrite (buf, 1, 4, (FILE *) mpeg->ext);
+		if (fwrite (buf, 1, 4, (FILE *) mpeg->ext) != 4) {
+			r = 1;
+		}
 	}
 
 	if (par_split) {
