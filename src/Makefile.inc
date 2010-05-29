@@ -30,7 +30,7 @@ MPEGDEMUX_SRC  := $(foreach f,$(MPEGDEMUX_BAS),$(rel)/$(f).c)
 MPEGDEMUX_OBJ  := $(foreach f,$(MPEGDEMUX_BAS),$(rel)/$(f).o)
 MPEGDEMUX_HDR  := $(foreach f,$(MPEGDEMUX_BAS),$(rel)/$(f).h)
 MPEGDEMUX_MAN1 := $(rel)/mpegdemux.1
-MPEGDEMUX_BIN  := $(rel)/mpegdemux
+MPEGDEMUX_BIN  := $(rel)/mpegdemux$(EXEEXT)
 MPEGDEMUX_SDP  := $(MPEGDEMUX_HDR) $(rel)/config.h
 MPEGDEMUX_BDP  := $(MPEGDEMUX_OBJ)
 
@@ -48,6 +48,6 @@ $(rel)/mpeg_demux.o:	$(rel)/mpeg_demux.c $(MPEGDEMUX_SDP)
 $(rel)/mpeg_remux.o:	$(rel)/mpeg_remux.c $(MPEGDEMUX_SDP)
 $(rel)/mpeg_scan.o:	$(rel)/mpeg_scan.c $(MPEGDEMUX_SDP)
 
-$(rel)/mpegdemux: $(MPEGDEMUX_BDP)
+$(rel)/mpegdemux$(EXEEXT): $(MPEGDEMUX_BDP)
 	$(QP)echo "  LD     $@"
 	$(QR)$(LD) -o $@ $(LDFLAGS) $(MPEGDEMUX_OBJ) $(LIBS)
