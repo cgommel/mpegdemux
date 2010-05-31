@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/mpegdemux.c                                              *
  * Created:     2003-02-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2009 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2010 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -100,7 +100,7 @@ void prt_version (void)
 	fputs (
 		"mpegdemux version " MPEGDEMUX_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2003-2009 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2003-2010 Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 }
@@ -308,16 +308,22 @@ void mpeg_print_stats (mpeg_demux_t *mpeg, FILE *fp)
 
 	for (i = 0; i < 256; i++) {
 		if (mpeg->streams[i].packet_cnt > 0) {
-			fprintf (fp, "Stream %02x:      %lu packets / %llu bytes\n",
-				i, mpeg->streams[i].packet_cnt, mpeg->streams[i].size
+			fprintf (fp,
+			"Stream %02x:      "
+			"%lu packets / %" PRIuMAX " bytes\n",
+				i, mpeg->streams[i].packet_cnt,
+				(uintmax_t) mpeg->streams[i].size
 			);
 		}
 	}
 
 	for (i = 0; i < 256; i++) {
 		if (mpeg->substreams[i].packet_cnt > 0) {
-			fprintf (fp, "Substream %02x:   %lu packets / %llu bytes\n",
-				i, mpeg->substreams[i].packet_cnt, mpeg->substreams[i].size
+			fprintf (fp,
+				"Substream %02x:   "
+				"%lu packets / %" PRIuMAX " bytes\n",
+				i, mpeg->substreams[i].packet_cnt,
+				(uintmax_t) mpeg->substreams[i].size
 			);
 		}
 	}

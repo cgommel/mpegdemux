@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/mpeg_list.c                                              *
  * Created:     2003-02-02 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2009 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2010 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -40,7 +40,9 @@ static
 void mpeg_list_print_skip (FILE *fp)
 {
 	if (skip_cnt > 0) {
-		fprintf (fp, "%08llx: skip %lu\n", skip_ofs, skip_cnt);
+		fprintf (fp, "%08" PRIxMAX ": skip %lu\n",
+			(uintmax_t) skip_ofs, skip_cnt
+		);
 
 		skip_cnt = 0;
 	}
@@ -71,8 +73,10 @@ int mpeg_list_system_header (mpeg_demux_t *mpeg)
 
 	mpeg_list_print_skip (fp);
 
-	fprintf (fp, "%08llx: system header[%lu]: size=%u fixed=%d csps=%d\n",
-		mpeg->ofs, mpeg->shdr_cnt - 1,
+	fprintf (fp, "%08" PRIxMAX ": system header[%lu]: "
+		"size=%u fixed=%d csps=%d\n",
+		(uintmax_t) mpeg->ofs,
+		mpeg->shdr_cnt - 1,
 		mpeg->shdr.size, mpeg->shdr.fixed, mpeg->shdr.csps
 	);
 
@@ -101,8 +105,8 @@ int mpeg_list_packet (mpeg_demux_t *mpeg)
 	mpeg_list_print_skip (fp);
 
 	fprintf (fp,
-		"%08llx: packet[%lu]: sid=%02x",
-		mpeg->ofs,
+		"%08" PRIxMAX ": packet[%lu]: sid=%02x",
+		(uintmax_t) mpeg->ofs,
 		mpeg->streams[sid].packet_cnt - 1,
 		sid
 	);
@@ -128,9 +132,11 @@ int mpeg_list_packet (mpeg_demux_t *mpeg)
 
 	if (mpeg->packet.have_pts || mpeg->packet.have_dts) {
 		fprintf (fp,
-			" pts=%llu[%.4f] dts=%llu[%.4f]",
-			mpeg->packet.pts, (double) mpeg->packet.pts / 90000.0,
-			mpeg->packet.dts, (double) mpeg->packet.dts / 90000.0
+			" pts=%" PRIuMAX "[%.4f] dts=%" PRIuMAX "[%.4f]",
+			(uintmax_t) mpeg->packet.pts,
+			(double) mpeg->packet.pts / 90000.0,
+			(uintmax_t) mpeg->packet.dts,
+			(double) mpeg->packet.dts / 90000.0
 		);
 	}
 
@@ -152,10 +158,14 @@ int mpeg_list_pack (mpeg_demux_t *mpeg)
 
 	mpeg_list_print_skip (fp);
 
-	fprintf (fp, "%08llx: pack[%lu]: type=%u scr=%llu[%.4f] mux=%lu[%.2f] stuff=%u\n",
-		mpeg->ofs, mpeg->pack_cnt - 1,
+	fprintf (fp,
+		"%08" PRIxMAX ": pack[%lu]: "
+		"type=%u scr=%" PRIuMAX "[%.4f] mux=%lu[%.2f] stuff=%u\n",
+		(uintmax_t) mpeg->ofs,
+		mpeg->pack_cnt - 1,
 		mpeg->pack.type,
-		mpeg->pack.scr, (double) mpeg->pack.scr / 90000.0,
+		(uintmax_t) mpeg->pack.scr,
+		(double) mpeg->pack.scr / 90000.0,
 		mpeg->pack.mux_rate, 50.0 * mpeg->pack.mux_rate,
 		mpeg->pack.stuff
 	);
@@ -178,7 +188,7 @@ int mpeg_list_end (mpeg_demux_t *mpeg)
 
 	mpeg_list_print_skip (fp);
 
-	fprintf (fp, "%08llx: end\n", mpeg->ofs);
+	fprintf (fp, "%08" PRIxMAX ": end\n", (uintmax_t) mpeg->ofs);
 
 	return (0);
 }

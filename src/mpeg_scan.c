@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/mpeg_scan.c                                              *
  * Created:     2003-02-07 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2009 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2010 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -62,8 +62,9 @@ int mpeg_scan_packet (mpeg_demux_t *mpeg)
 	ofs = mpeg->ofs;
 
 	if (mpegd_set_offset (mpeg, ofs + mpeg->packet.size)) {
-		fprintf (fp, "%08llx: sid=%02x ssid=%02x incomplete packet\n",
-			ofs, sid, ssid
+		fprintf (fp,
+			"%08" PRIxMAX ": sid=%02x ssid=%02x incomplete packet\n",
+			(uintmax_t) ofs, sid, ssid
 		);
 	}
 
@@ -108,7 +109,7 @@ int mpeg_scan_packet (mpeg_demux_t *mpeg)
 		}
 	}
 
-	fprintf (fp, "%08llx: sid=%02x", ofs, sid);
+	fprintf (fp, "%08" PRIxMAX ": sid=%02x", (uintmax_t) ofs, sid);
 
 	if (sid == 0xbd) {
 		fprintf (fp, "[%02x]", ssid);
@@ -128,8 +129,9 @@ int mpeg_scan_packet (mpeg_demux_t *mpeg)
 	}
 
 	if (mpeg->packet.have_pts) {
-		fprintf (fp, " pts=%llu[%.4f]",
-			mpeg->packet.pts, (double) mpeg->packet.pts / 90000.0
+		fprintf (fp, " pts=%" PRIuMAX "[%.4f]",
+			(uintmax_t) mpeg->packet.pts,
+			(double) mpeg->packet.pts / 90000.0
 		);
 	}
 
@@ -154,7 +156,9 @@ int mpeg_scan_end (mpeg_demux_t *mpeg)
 	fp = (FILE *) mpeg->ext;
 
 	if (!par_no_end) {
-		fprintf (fp, "%08llx: end code\n", mpeg->ofs);
+		fprintf (fp, "%08" PRIxMAX ": end code\n",
+			(uintmax_t) mpeg->ofs
+		);
 	}
 
 	return (0);
