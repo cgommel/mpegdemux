@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/config.h.in                                              *
  * Created:     2003-02-02 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2009 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2010 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -37,6 +37,8 @@
 #ifdef MPEGDEMUX_LARGE_FILE
 #define _FILE_OFFSET_BITS 64
 #endif
+
+#undef HAVE_INTTYPES_H
 
 
 #endif

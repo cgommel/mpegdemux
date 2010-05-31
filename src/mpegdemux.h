@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/mpegdemux.h                                              *
  * Created:     2003-02-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2009 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2010 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -25,6 +25,15 @@
 
 
 #include "config.h"
+
+
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#else
+typedef unsigned long uintmax_t;
+#define PRIuMAX "lu"
+#define PRIxMAX "lx"
+#endif
 
 
 #define PAR_STREAM_SELECT  0x01
