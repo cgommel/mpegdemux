@@ -18,6 +18,7 @@ $(rel)/%.o: $(rel)/%.c
 
 MPEGDEMUX_BAS := \
 	buffer \
+	getopt \
 	message \
 	mpegdemux \
 	mpeg_demux \
@@ -40,6 +41,7 @@ CLN  += $(MPEGDEMUX_BIN) $(MPEGDEMUX_OBJ)
 DIST += $(MPEGDEMUX_SRC) $(MPEGDEMUX_HDR) $(MPEGDEMUX_MAN1)
 
 $(rel)/buffer.o:	$(rel)/buffer.c $(MPEGDEMUX_SDP)
+$(rel)/getopt.o:	$(rel)/getopt.c $(MPEGDEMUX_SDP)
 $(rel)/message.o:	$(rel)/message.c $(MPEGDEMUX_SDP)
 $(rel)/mpegdemux.o:	$(rel)/mpegdemux.c $(MPEGDEMUX_SDP)
 $(rel)/mpeg_parse.o:	$(rel)/mpeg_parse.c $(MPEGDEMUX_SDP)

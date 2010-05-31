@@ -27,6 +27,7 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include "getopt.h"
 #include "message.h"
 #include "mpeg_parse.h"
 #include "mpeg_list.h"
@@ -63,39 +64,49 @@ char            *par_demux_name = NULL;
 unsigned        par_packet_max = 0;
 
 
+static mpegd_option_t opts[] = {
+	{ '?', 0, "help", NULL, "Print usage information" },
+	{ 'a', 0, "ac3", NULL, "Assume DVD AC3 headers in private streams" },
+	{ 'b', 1, "base-name", "name", "Set the base name for demuxed streams" },
+	{ 'c', 0, "scan", NULL, "Scan the stream [default]" },
+	{ 'd', 0, "demux", NULL, "Demultiplex streams" },
+	{ 'D', 0, "no-drop", NULL, "Don't drop incomplete packets" },
+	{ 'e', 0, "no-end", NULL, "Don't list end codes [no]" },
+	{ 'E', 0, "empty-packs", NULL, "Remux empty packs [no]" },
+	{ 'F', 0, "first-pts", NULL, "Print packet with lowest PTS [no]" },
+	{ 'h', 0, "no-system-headers", NULL, "Don't list system headers" },
+	{ 'i', 1, "invalid", "id", "Select invalid streams [none]" },
+	{ 'k', 0, "no-packs", NULL, "Don't list packs" },
+	{ 'K', 0, "remux-skipped", NULL, "Copy skipped bytes when remuxing [no]" },
+	{ 'l', 0, "list", NULL, "List the stream contents" },
+	{ 'm', 1, "packet-max-size", "int", "Set the maximum packet size [0]" },
+	{ 'p', 1, "substream", "id", "Select substreams [none]" },
+	{ 'P', 2, "substream-map", "id1 id2", "Remap substream id1 to id2" },
+	{ 'r', 0, "remux", NULL, "Copy modified input to output" },
+	{ 's', 1, "stream", "id", "Select streams [none]" },
+	{ 'S', 2, "stream-map", "id1 id2", "Remap stream id1 to id2" },
+	{ 't', 0, "no-packets", NULL, "Don't list packets" },
+	{ 'u', 0, "spu", NULL, "Assume DVD subtitles in private streams" },
+	{ 'V', 0, "version", NULL, "Print version information" },
+	{ 'x', 0, "split", NULL, "Split sequences while remuxing [no]" },
+	{  -1, 0, NULL, NULL, NULL }
+};
+
+
 static
-void prt_help (void)
+void print_help (void)
 {
-	fputs (
-		"usage: mpegdemux [options] [input [output]]\n"
-		"  -a, --ac3                    Assume DVD AC3 headers in private streams\n"
-		"  -b, --base-name name         Set the base name for demuxed streams\n"
-		"  -c, --scan                   Scan the stream [default]\n"
-		"  -d, --demux                  Demultiplex streams\n"
-		"  -D, --no-drop                Don't drop incomplete packets\n"
-		"  -e, --no-end                 Don't list end codes [no]\n"
-		"  -E, --empty-packs            Remux empty packs [no]\n"
-		"  -F, --first-pts              Print packet with lowest PTS [no]\n"
-		"  -h, --no-system-headers      Don't list system headers\n"
-		"  -i, --invalid id             Select invalid streams [none]\n"
-		"  -k, --no-packs               Don't list packs\n"
-		"  -K, --remux-skipped          Copy skipped bytes when remuxing [no]\n"
-		"  -l, --list                   List the stream contents\n"
-		"  -m, --packet-max-size int    Set the maximum packet size [0]\n"
-		"  -p, --substream id           Select substreams [none]\n"
-		"  -P, --substream-map id1 id2  Remap substream id1 to id2\n"
-		"  -r, --remux                  Copy modified input to output\n"
-		"  -s, --stream id              Select streams [none]\n"
-		"  -S, --stream-map id1 id2     Remap stream id1 to id2\n"
-		"  -t, --no-packets             Don't list packets\n"
-		"  -u, --spu                    Assume DVD subtitles in private streams\n"
-		"  -x, --split                  Split sequences while remuxing [no]\n",
-		stdout
+	mpegd_getopt_help (
+		"mpegdemux: demultiplex MPEG1/2 system streams",
+		"usage: mpegdemux [options] [input [output]]",
+		opts
 	);
+
+	fflush (stdout);
 }
 
 static
-void prt_version (void)
+void print_version (void)
 {
 	fputs (
 		"mpegdemux version " MPEGDEMUX_VERSION_STR
@@ -118,20 +129,6 @@ char *str_clone (const char *str)
 	strcpy (ret, str);
 
 	return (ret);
-}
-
-static
-int str_isarg (const char *str, const char *arg1, const char *arg2)
-{
-	if ((arg1 != NULL) && (strcmp (str, arg1) == 0)) {
-		return (1);
-	}
-
-	if ((arg2 != NULL) && (strcmp (str, arg2) == 0)) {
-		return (1);
-	}
-
-	return (0);
 }
 
 static
@@ -359,20 +356,10 @@ int mpeg_copy (mpeg_demux_t *mpeg, FILE *fp, unsigned n)
 
 int main (int argc, char **argv)
 {
-	int      argi;
 	unsigned i;
 	int      r;
-
-	if (argc == 2) {
-		if (str_isarg (argv[1], NULL, "--version")) {
-			prt_version();
-			return (0);
-		}
-		else if (str_isarg (argv[1], NULL, "--help")) {
-			prt_help();
-			return (0);
-		}
-	}
+	unsigned id1, id2;
+	char     **optarg;
 
 	for (i = 0; i < 256; i++) {
 		par_stream[i] = 0;
@@ -381,59 +368,68 @@ int main (int argc, char **argv)
 		par_substream_map[i] = i;
 	}
 
-	argi = 1;
-	while (argi < argc) {
-		if (str_isarg (argv[argi], "-c", "--scan")) {
-			unsigned i;
+	while (1) {
+		r = mpegd_getopt (argc, argv, &optarg, opts);
 
+		if (r == GETOPT_DONE) {
+			break;
+		}
+
+		if (r < 0) {
+			return (1);
+		}
+
+		switch (r) {
+		case '?':
+			print_help();
+			return (0);
+
+		case 'a':
+			par_dvdac3 = 1;
+			break;
+
+		case 'b':
+			if (par_demux_name != NULL) {
+				free (par_demux_name);
+			}
+			par_demux_name = str_clone (optarg[0]);
+			break;
+
+		case 'c':
 			par_mode = PAR_MODE_SCAN;
 
 			for (i = 0; i < 256; i++) {
 				par_stream[i] |= PAR_STREAM_SELECT;
 				par_substream[i] |= PAR_STREAM_SELECT;
 			}
-		}
-		else if (str_isarg (argv[argi], "-l", "--list")) {
-			par_mode = PAR_MODE_LIST;
-		}
-		else if (str_isarg (argv[argi], "-r", "--remux")) {
-			par_mode = PAR_MODE_REMUX;
-		}
-		else if (str_isarg (argv[argi], "-d", "--demux")) {
+			break;
+
+		case 'd':
 			par_mode = PAR_MODE_DEMUX;
-		}
-		else if (str_isarg (argv[argi], "-s", "--stream")) {
-			argi += 1;
-			if (argi >= argc) {
-				prt_err ("%s: missing stream id\n", argv[0]);
-				return (1);
-			}
+			break;
 
-			if (str_get_streams (argv[argi], par_stream, PAR_STREAM_SELECT)) {
-				prt_err ("%s: bad stream id (%s)\n", argv[0], argv[argi]);
-				return (1);
-			}
-		}
-		else if (str_isarg (argv[argi], "-p", "--substream")) {
-			argi += 1;
-			if (argi >= argc) {
-				prt_err ("%s: missing substream id\n", argv[0]);
-				return (1);
-			}
+		case 'D':
+			par_drop = 0;
+			break;
 
-			if (str_get_streams (argv[argi], par_substream, PAR_STREAM_SELECT)) {
-				prt_err ("%s: bad substream id (%s)\n", argv[0], argv[argi]);
-				return (1);
-			}
-		}
-		else if (str_isarg (argv[argi], "-i", "--invalid")) {
-			argi += 1;
-			if (argi >= argc) {
-				prt_err ("%s: missing invalid stream id\n", argv[0]);
-				return (1);
-			}
+		case 'e':
+			par_no_end = 1;
+			break;
 
-			if (strcmp (argv[argi], "-") == 0) {
+		case 'E':
+			par_empty_pack = 1;
+			break;
+
+		case 'F':
+			par_first_pts = 1;
+			break;
+
+		case 'h':
+			par_no_shdr = 1;
+			break;
+
+		case 'i':
+			if (strcmp (optarg[0], "-") == 0) {
 				for (i = 0; i < 256; i++) {
 					if (par_stream[i] & PAR_STREAM_SELECT) {
 						par_stream[i] &= ~PAR_STREAM_INVALID;
@@ -444,135 +440,118 @@ int main (int argc, char **argv)
 				}
 			}
 			else {
-				if (str_get_streams (argv[argi], par_stream, PAR_STREAM_INVALID)) {
-					prt_err ("%s: bad stream id (%s)\n", argv[0], argv[argi]);
+				if (str_get_streams (optarg[0], par_stream, PAR_STREAM_INVALID)) {
+					prt_err ("%s: bad stream id (%s)\n", argv[0], optarg[0]);
 					return (1);
 				}
 			}
-		}
-		else if (str_isarg (argv[argi], "-b", "--base-name")) {
-			argi += 1;
-			if (argi >= argc) {
-				prt_err ("%s: missing base name\n", argv[0]);
-				return (1);
-			}
+			break;
 
-			if (par_demux_name != NULL) {
-				free (par_demux_name);
-			}
-
-			par_demux_name = str_clone (argv[argi]);
-		}
-		else if (str_isarg (argv[argi], "-m", "--packet-max-size")) {
-			argi += 1;
-			if (argi >= argc) {
-				prt_err ("%s: missing maximum packet size\n", argv[0]);
-				return (1);
-			}
-
-			par_packet_max = (unsigned) strtoul (argv[argi], NULL, 0);
-		}
-		else if (str_isarg (argv[argi], "-S", "--stream-map")) {
-			unsigned id1, id2;
-
-			if ((argi + 2) >= argc) {
-				prt_err ("%s: missing stream id\n", argv[0]);
-				return (1);
-			}
-
-			id1 = (unsigned) strtoul (argv[argi + 1], NULL, 0);
-			id2 = (unsigned) strtoul (argv[argi + 2], NULL, 0);
-
-			par_stream_map[id1 & 0xff] = id2 & 0xff;
-
-			argi += 2;
-		}
-		else if (str_isarg (argv[argi], "-P", "--substream-map")) {
-			unsigned id1, id2;
-
-			if ((argi + 2) >= argc) {
-				prt_err ("%s: missing substream id\n", argv[0]);
-				return (1);
-			}
-
-			id1 = (unsigned) strtoul (argv[argi + 1], NULL, 0);
-			id2 = (unsigned) strtoul (argv[argi + 2], NULL, 0);
-
-			par_substream_map[id1 & 0xff] = id2 & 0xff;
-
-			argi += 2;
-		}
-		else if (str_isarg (argv[argi], "-x", "--split")) {
-			par_split = 1;
-		}
-		else if (str_isarg (argv[argi], "-h", "--no-system-headers")) {
-			par_no_shdr = 1;
-		}
-		else if (str_isarg (argv[argi], "-k", "--no-packs")) {
+		case 'k':
 			par_no_pack = 1;
-		}
-		else if (str_isarg (argv[argi], "-K", "--remux-skipped")) {
+			break;
+
+		case 'K':
 			par_remux_skipped = 1;
-		}
-		else if (str_isarg (argv[argi], "-t", "--no-packets")) {
+			break;
+
+		case 'l':
+			par_mode = PAR_MODE_LIST;
+			break;
+
+		case 'm':
+			par_packet_max = (unsigned) strtoul (optarg[0], NULL, 0);
+			break;
+
+		case 'p':
+			if (str_get_streams (optarg[0], par_substream, PAR_STREAM_SELECT)) {
+				prt_err ("%s: bad substream id (%s)\n", argv[0], optarg[0]);
+				return (1);
+			}
+			break;
+
+		case 'P':
+			id1 = (unsigned) strtoul (optarg[0], NULL, 0);
+			id2 = (unsigned) strtoul (optarg[1], NULL, 0);
+			par_substream_map[id1 & 0xff] = id2 & 0xff;
+			break;
+
+		case 'r':
+			par_mode = PAR_MODE_REMUX;
+			break;
+
+		case 's':
+			if (str_get_streams (optarg[0], par_stream, PAR_STREAM_SELECT)) {
+				prt_err ("%s: bad stream id (%s)\n", argv[0], optarg[0]);
+				return (1);
+			}
+			break;
+
+		case 'S':
+			id1 = (unsigned) strtoul (optarg[0], NULL, 0);
+			id2 = (unsigned) strtoul (optarg[1], NULL, 0);
+			par_stream_map[id1 & 0xff] = id2 & 0xff;
+			break;
+
+		case 't':
 			par_no_packet = 1;
-		}
-		else if (str_isarg (argv[argi], "-e", "--no-end")) {
-			par_no_end = 1;
-		}
-		else if (str_isarg (argv[argi], "-E", "--empty-packs")) {
-			par_empty_pack = 1;
-		}
-		else if (str_isarg (argv[argi], "-D", "--no-drop")) {
-			par_drop = 0;
-		}
-		else if (str_isarg (argv[argi], "-F", "--first-pts")) {
-			par_first_pts = 1;
-		}
-		else if (str_isarg (argv[argi], "-a", "--ac3")) {
-			par_dvdac3 = 1;
-		}
-		else if (str_isarg (argv[argi], "-u", "--spu")) {
+			break;
+
+		case 'u':
 			par_dvdsub = 1;
-		}
-		else if ((argv[argi][0] != '-') || (argv[argi][1] == 0)) {
+			break;
+
+		case 'V':
+			print_version();
+			return (0);
+
+		case 'x':
+			par_split = 1;
+			break;
+
+		case 0:
 			if (par_inp == NULL) {
-				if (strcmp (argv[argi], "-") == 0) {
+				if (strcmp (optarg[0], "-") == 0) {
 					par_inp = stdin;
 				}
 				else {
-					par_inp = fopen (argv[argi], "rb");
+					par_inp = fopen (optarg[0], "rb");
 				}
 				if (par_inp == NULL) {
-					prt_err ("%s: can't open input file (%s)\n", argv[0], argv[argi]);
+					prt_err (
+						"%s: can't open input file (%s)\n",
+						argv[0], optarg[0]
+					);
 					return (1);
 				}
 			}
 			else if (par_out == NULL) {
-				if (strcmp (argv[argi], "-") == 0) {
+				if (strcmp (optarg[0], "-") == 0) {
 					par_out = stdout;
 				}
 				else {
-					par_out = fopen (argv[argi], "wb");
+					par_out = fopen (optarg[0], "wb");
 				}
 				if (par_out == NULL) {
-					prt_err ("%s: can't open output file (%s)\n", argv[0], argv[argi]);
+					prt_err (
+						"%s: can't open output file (%s)\n",
+						argv[0], optarg[0]
+					);
 					return (1);
 				}
 			}
 			else {
-				prt_err ("%s: too many files (%s)\n", argv[0], argv[argi]);
+				prt_err ("%s: too many files (%s)\n",
+					argv[0], optarg[0]
+				);
 				return (1);
 			}
-		}
-		else {
-			prt_err ("%s: unknown parameter (%s)\n", argv[0], argv[argi]);
+			break;
+
+		default:
 			return (1);
 		}
-
-		argi += 1;
 	}
-
 
 	if (par_inp == NULL) {
 		par_inp = stdin;
