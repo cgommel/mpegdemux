@@ -1,0 +1,37 @@
+/*****************************************************************************
+ * mpegdemux                                                                 *
+ *****************************************************************************/
+
+/*****************************************************************************
+ * File name:   src/config.tc                                                *
+ * Created:     2010-05-29 by Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010 Hampa Hug <hampa@hampa.ch>                          *
+ *****************************************************************************/
+
+/*****************************************************************************
+ * This program is free software. You can redistribute it and / or modify it *
+ * under the terms of the GNU General Public License version 2 as  published *
+ * by the Free Software Foundation.                                          *
+ *                                                                           *
+ * This program is distributed in the hope  that  it  will  be  useful,  but *
+ * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * Public License for more details.                                          *
+ *****************************************************************************/
+
+
+#ifndef MPEGDEMUX_CONFIG_H
+#define MPEGDEMUX_CONFIG_H 1
+
+
+#define MPEGDEMUX_VERSION_MAJ %MPEGDEMUX_VERSION_MAJ%
+#define MPEGDEMUX_VERSION_MIN %MPEGDEMUX_VERSION_MIN%
+#define MPEGDEMUX_VERSION_MIC %MPEGDEMUX_VERSION_MIC%
+#define MPEGDEMUX_VERSION_STR "%MPEGDEMUX_VERSION_STR%"
+
+#undef MPEGDEMUX_LARGE_FILE
+
+#undef HAVE_INTTYPES_H
+
+
+#endif

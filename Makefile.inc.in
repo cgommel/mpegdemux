@@ -37,7 +37,7 @@ distdir := mpegdemux-$(MPEGDEMUX_VERSION_STR)
 DCL += Makefile Makefile.inc configure config.log config.status
 
 DIST += AUTHORS COPYING ChangeLog INSTALL \
-	Makefile.in Makefile.inc.in \
+	Makefile.in Makefile.inc.in Makefile.tc \
 	NEWS README TODO autogen.sh \
 	configure configure.in install-sh
 

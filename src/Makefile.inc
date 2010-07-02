@@ -4,7 +4,7 @@ rel := src
 
 DCL  += $(rel)/config.h
 DIRS += $(rel)
-DIST += $(rel)/Makefile.inc $(rel)/config.h.in
+DIST += $(rel)/Makefile.inc $(rel)/config.h.in $(rel)/config.tc
 
 # ----------------------------------------------------------------------
 

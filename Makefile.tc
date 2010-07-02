@@ -1,0 +1,81 @@
+# Makefile.tc
+
+# Makefile for Turbo C / Turbo C++ / Borland C++
+
+MODEL=l
+
+CC  = tcc
+OPT = -O -Z- -G- -d
+# Turbo C and Turbo C++ miscompile with -Z.
+
+SRC    = src
+OUT    = out
+
+CFLAGS = -m$(MODEL) $(OPT) -I$(SRC)
+
+LD      = $(CC)
+LDFLAGS = -m$(MODEL)
+
+all: $(OUT)\\mpgdemux.exe
+
+dirs:
+	MKDIR $(OUT)
+
+clean:
+	DEL $(OUT)\\*.EXE
+	DEL $(OUT)\\*.OBJ
+
+HDR = \
+	$(SRC)\\mpegdemux.h \
+	$(SRC)\\buffer.h \
+	$(SRC)\\config.h \
+	$(SRC)\\getopt.h \
+	$(SRC)\\message.h \
+	$(SRC)\\mpeg_demux.h \
+	$(SRC)\\mpeg_list.h \
+	$(SRC)\\mpeg_parse.h \
+	$(SRC)\\mpeg_remux.h \
+	$(SRC)\\mpeg_scan.h
+
+OBJ = \
+	$(OUT)\\mpegdemux.obj \
+	$(OUT)\\buffer.obj \
+	$(OUT)\\getopt.obj \
+	$(OUT)\\message.obj \
+	$(OUT)\\mpeg_demux.obj \
+	$(OUT)\\mpeg_list.obj \
+	$(OUT)\\mpeg_parse.obj \
+	$(OUT)\\mpeg_remux.obj \
+	$(OUT)\\mpeg_scan.obj
+
+$(OUT)\\mpegdemux.obj: $(SRC)\\mpegdemux.c $(HDR)
+	$(CC) $(CFLAGS) -c -o$*.obj $(SRC)\\mpegdemux.c
+
+$(OUT)\\buffer.obj: $(SRC)\\buffer.c $(HDR)
+	$(CC) $(CFLAGS) -c -o$*.obj $(SRC)\\buffer.c
+
+$(OUT)\\getopt.obj: $(SRC)\\getopt.c $(HDR)
+	$(CC) $(CFLAGS) -c -o$*.obj $(SRC)\\getopt.c
+
+$(OUT)\\message.obj: $(SRC)\\message.c $(HDR)
+	$(CC) $(CFLAGS) -c -o$*.obj $(SRC)\\message.c
+
+$(OUT)\\mpeg_demux.obj: $(SRC)\\mpeg_demux.c $(HDR)
+	$(CC) $(CFLAGS) -c -o$*.obj $(SRC)\\mpeg_demux.c
+
+$(OUT)\\mpeg_list.obj: $(SRC)\\mpeg_list.c $(HDR)
+	$(CC) $(CFLAGS) -c -o$*.obj $(SRC)\\mpeg_list.c
+
+$(OUT)\\mpeg_parse.obj: $(SRC)\\mpeg_parse.c $(HDR)
+	$(CC) $(CFLAGS) -c -o$*.obj $(SRC)\\mpeg_parse.c
+
+$(OUT)\\mpeg_remux.obj: $(SRC)\\mpeg_remux.c $(HDR)
+	$(CC) $(CFLAGS) -c -o$*.obj $(SRC)\\mpeg_remux.c
+
+$(OUT)\\mpeg_scan.obj: $(SRC)\\mpeg_scan.c $(HDR)
+	$(CC) $(CFLAGS) -c -o$*.obj $(SRC)\\mpeg_scan.c
+
+$(OUT)\\mpgdemux.exe: $(OBJ)
+	$(LD) $(LDFLAGS) -e$*.exe @&&!
+	$(OBJ)
+!
