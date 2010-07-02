@@ -1,3 +1,10 @@
+0.1.4	2010-07-02
+
+	* A new non-recursive build system.
+	* A new command line option parser. Command line options are
+	  unchanged but multiple options can now be grouped together.
+	* Bugfixes
+
 0.1.3	2009-02-15	r106
 
 	* A packet size limit can now be specified to avoid losing large
