@@ -66,7 +66,7 @@ extern char          *par_demux_name;
 
 
 char *mpeg_get_name (const char *base, unsigned sid);
-int mpeg_stream_excl (unsigned char sid, unsigned char ssid);
+int mpeg_stream_excl (unsigned sid, unsigned ssid);
 int mpeg_packet_check (mpeg_demux_t *mpeg);
 void mpeg_print_stats (mpeg_demux_t *mpeg, FILE *fp);
 int mpeg_copy (mpeg_demux_t *mpeg, FILE *fp, unsigned n);

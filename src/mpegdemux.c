@@ -260,14 +260,14 @@ char *mpeg_get_name (const char *base, unsigned sid)
 	return (ret);
 }
 
-int mpeg_stream_excl (unsigned char sid, unsigned char ssid)
+int mpeg_stream_excl (unsigned sid, unsigned ssid)
 {
-	if ((par_stream[sid] & PAR_STREAM_SELECT) == 0) {
+	if ((par_stream[sid & 0xff] & PAR_STREAM_SELECT) == 0) {
 		return (1);
 	}
 
 	if (sid == 0xbd) {
-		if ((par_substream[ssid] & PAR_STREAM_SELECT) == 0) {
+		if ((par_substream[ssid & 0xff] & PAR_STREAM_SELECT) == 0) {
 			return (1);
 		}
 	}
