@@ -27,15 +27,6 @@
 #include "config.h"
 
 
-#ifdef HAVE_INTTYPES_H
-#include <inttypes.h>
-#else
-typedef unsigned long uintmax_t;
-#define PRIuMAX "lu"
-#define PRIxMAX "lx"
-#endif
-
-
 #define PAR_STREAM_SELECT  0x01
 #define PAR_STREAM_INVALID 0x02
 

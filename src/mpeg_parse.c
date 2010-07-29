@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/mpeg_parse.c                                             *
  * Created:     2003-02-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2009 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2010 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "message.h"
+#include "mpeg_ints.h"
 #include "mpeg_parse.h"
 
 

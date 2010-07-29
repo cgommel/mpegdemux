@@ -27,6 +27,7 @@
 #include <stdarg.h>
 
 #include "message.h"
+#include "mpeg_ints.h"
 #include "mpeg_parse.h"
 #include "mpeg_scan.h"
 #include "mpegdemux.h"

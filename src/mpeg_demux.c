@@ -28,6 +28,7 @@
 
 #include "message.h"
 #include "buffer.h"
+#include "mpeg_ints.h"
 #include "mpeg_parse.h"
 #include "mpeg_demux.h"
 #include "mpegdemux.h"

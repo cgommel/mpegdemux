@@ -30,6 +30,7 @@ MPEGDEMUX_BAS := \
 MPEGDEMUX_SRC  := $(foreach f,$(MPEGDEMUX_BAS),$(rel)/$(f).c)
 MPEGDEMUX_OBJ  := $(foreach f,$(MPEGDEMUX_BAS),$(rel)/$(f).o)
 MPEGDEMUX_HDR  := $(foreach f,$(MPEGDEMUX_BAS),$(rel)/$(f).h)
+MPEGDEMUX_HDR  += $(rel)/mpeg_ints.h
 MPEGDEMUX_MAN1 := $(rel)/mpegdemux.1
 MPEGDEMUX_BIN  := $(rel)/mpegdemux$(EXEEXT)
 MPEGDEMUX_SDP  := $(MPEGDEMUX_HDR) $(rel)/config.h
