@@ -46,7 +46,7 @@ int mpeg_demux_copy_spu (mpeg_demux_t *mpeg, FILE *fp, unsigned cnt)
 	static int         half = 0;
 	unsigned           i, n;
 	unsigned char      buf[8];
-	unsigned long long pts;
+	uint64_t           pts;
 
 	if (half) {
 		mpegd_read (mpeg, buf, 1);

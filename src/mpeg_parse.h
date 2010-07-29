@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/mpeg_parse.h                                             *
  * Created:     2003-02-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2009 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2010 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -28,6 +28,8 @@
 
 #include <stdio.h>
 
+#include "mpeg_ints.h"
+
 
 #define MPEG_DEMUX_BUFFER 4096
 
@@ -39,7 +41,7 @@
 
 typedef struct {
 	unsigned long      packet_cnt;
-	unsigned long long size;
+	uint64_t           size;
 } mpeg_stream_info_t;
 
 typedef struct {
@@ -56,16 +58,16 @@ typedef struct {
 	unsigned           offset;
 
 	char               have_pts;
-	unsigned long long pts;
+	uint64_t           pts;
 
 	char               have_dts;
-	unsigned long long dts;
+	uint64_t           dts;
 } mpeg_packet_t;
 
 typedef struct {
 	unsigned           size;
 	unsigned           type;
-	unsigned long long scr;
+	uint64_t           scr;
 	unsigned long      mux_rate;
 	unsigned           stuff;
 } mpeg_pack_t;
@@ -76,7 +78,7 @@ typedef struct mpeg_demux_t {
 
 	FILE               *fp;
 
-	unsigned long long ofs;
+	uint64_t           ofs;
 
 	unsigned           buf_i;
 	unsigned           buf_n;
@@ -118,7 +120,7 @@ int mpegd_skip (mpeg_demux_t *mpeg, unsigned n);
  *****************************************************************************/
 unsigned mpegd_read (mpeg_demux_t *mpeg, void *buf, unsigned n);
 
-int mpegd_set_offset (mpeg_demux_t *mpeg, unsigned long long ofs);
+int mpegd_set_offset (mpeg_demux_t *mpeg, uint64_t ofs);
 int mpegd_parse (mpeg_demux_t *mpeg);
 
 

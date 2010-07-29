@@ -33,8 +33,8 @@
 #include "mpegdemux.h"
 
 
-static unsigned long long skip_ofs = 0;
-static unsigned long      skip_cnt = 0;
+static uint64_t      skip_ofs = 0;
+static unsigned long skip_cnt = 0;
 
 
 static

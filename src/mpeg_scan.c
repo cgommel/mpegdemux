@@ -33,8 +33,8 @@
 #include "mpegdemux.h"
 
 
-static unsigned long long pts1[256];
-static unsigned long long pts2[256];
+static uint64_t pts1[256];
+static uint64_t pts2[256];
 
 
 static
@@ -46,10 +46,10 @@ int mpeg_scan_system_header (mpeg_demux_t *mpeg)
 static
 int mpeg_scan_packet (mpeg_demux_t *mpeg)
 {
-	FILE               *fp;
-	int                skip;
-	unsigned           sid, ssid;
-	unsigned long long ofs;
+	FILE     *fp;
+	int      skip;
+	unsigned sid, ssid;
+	uint64_t ofs;
 
 	sid = mpeg->packet.sid;
 	ssid = mpeg->packet.ssid;
@@ -172,8 +172,8 @@ int mpeg_scan (FILE *inp, FILE *out)
 	mpeg_demux_t *mpeg;
 
 	for (i = 0; i < 256; i++) {
-		pts1[i] = ~(unsigned long long) 0;
-		pts2[i] = ~(unsigned long long) 0;
+		pts1[i] = ~(uint64_t) 0;
+		pts2[i] = ~(uint64_t) 0;
 	}
 
 	mpeg = mpegd_open_fp (NULL, inp, 0);

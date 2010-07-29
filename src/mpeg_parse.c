@@ -264,7 +264,7 @@ unsigned mpegd_read (mpeg_demux_t *mpeg, void *buf, unsigned n)
 	return (ret);
 }
 
-int mpegd_set_offset (mpeg_demux_t *mpeg, unsigned long long ofs)
+int mpegd_set_offset (mpeg_demux_t *mpeg, uint64_t ofs)
 {
 	if (ofs == mpeg->ofs) {
 		return (0);
@@ -280,7 +280,7 @@ int mpegd_set_offset (mpeg_demux_t *mpeg, unsigned long long ofs)
 static
 int mpegd_seek_header (mpeg_demux_t *mpeg)
 {
-	unsigned long long ofs;
+	uint64_t ofs;
 
 	while (mpegd_get_bits (mpeg, 0, 24) != 1) {
 		ofs = mpeg->ofs + 1;
@@ -304,7 +304,7 @@ int mpegd_seek_header (mpeg_demux_t *mpeg)
 static
 int mpegd_parse_system_header (mpeg_demux_t *mpeg)
 {
-	unsigned long long ofs;
+	uint64_t ofs;
 
 	mpeg->shdr.size = mpegd_get_bits (mpeg, 32, 16) + 6;
 
@@ -329,8 +329,8 @@ int mpegd_parse_system_header (mpeg_demux_t *mpeg)
 static
 int mpegd_parse_packet1 (mpeg_demux_t *mpeg, unsigned i)
 {
-	unsigned           val;
-	unsigned long long tmp;
+	unsigned val;
+	uint64_t tmp;
 
 	mpeg->packet.type = 1;
 
@@ -379,9 +379,9 @@ int mpegd_parse_packet1 (mpeg_demux_t *mpeg, unsigned i)
 static
 int mpegd_parse_packet2 (mpeg_demux_t *mpeg, unsigned i)
 {
-	unsigned           pts_dts_flag;
-	unsigned           cnt;
-	unsigned long long tmp;
+	unsigned pts_dts_flag;
+	unsigned cnt;
+	uint64_t tmp;
 
 	mpeg->packet.type = 2;
 
@@ -428,9 +428,9 @@ int mpegd_parse_packet2 (mpeg_demux_t *mpeg, unsigned i)
 static
 int mpegd_parse_packet (mpeg_demux_t *mpeg)
 {
-	unsigned           i;
-	unsigned           sid, ssid;
-	unsigned long long ofs;
+	unsigned i;
+	unsigned sid, ssid;
+	uint64_t ofs;
 
 	mpeg->packet.type = 0;
 
@@ -511,8 +511,8 @@ int mpegd_parse_packet (mpeg_demux_t *mpeg)
 static
 int mpegd_parse_pack (mpeg_demux_t *mpeg)
 {
-	unsigned           sid;
-	unsigned long long ofs;
+	unsigned sid;
+	uint64_t ofs;
 
 	if (mpegd_get_bits (mpeg, 32, 4) == 0x02) {
 		mpeg->pack.type = 1;
@@ -579,7 +579,7 @@ int mpegd_parse_pack (mpeg_demux_t *mpeg)
 
 int mpegd_parse (mpeg_demux_t *mpeg)
 {
-	unsigned long long ofs;
+	uint64_t ofs;
 
 	while (1) {
 		if (mpegd_seek_header (mpeg)) {
