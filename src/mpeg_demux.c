@@ -65,7 +65,7 @@ int mpeg_demux_copy_spu (mpeg_demux_t *mpeg, FILE *fp, unsigned cnt)
 		if (spucnt == 0) {
 			pts = mpeg->packet.pts;
 			for (i = 0; i < 8; i++) {
-				buf[7 - i] = pts & 0xff;
+				buf[7 - i] = (unsigned char) (pts & 0xff);
 				pts = pts >> 8;
 			}
 
