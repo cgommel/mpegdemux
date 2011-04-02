@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/mpeg_scan.c                                              *
  * Created:     2003-02-07 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2010 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2011 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -47,7 +47,6 @@ static
 int mpeg_scan_packet (mpeg_demux_t *mpeg)
 {
 	FILE     *fp;
-	int      skip;
 	unsigned sid, ssid;
 	uint64_t ofs;
 
@@ -68,8 +67,6 @@ int mpeg_scan_packet (mpeg_demux_t *mpeg)
 			(uintmax_t) ofs, sid, ssid
 		);
 	}
-
-	skip = 0;
 
 	if (sid == 0xbd) {
 		if (mpeg->substreams[ssid].packet_cnt > 1) {
